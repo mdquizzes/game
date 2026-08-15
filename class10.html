@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Algebra Rapid Fire</title>
+
+<style>
+body { font-family: Arial; text-align: center; margin: 0; background: #f5f5f5; }
+.container { padding: 20px; }
+
+h1 { color: #333; }
+
+#question { font-size: 28px; margin: 20px; }
+
+.option {
+    display: block;
+    margin: 10px auto;
+    padding: 12px;
+    width: 200px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.correct { background: #4CAF50; color: white; }
+.wrong { background: #f44336; color: white; }
+
+#timer { font-size: 22px; color: red; }
+#score { font-size: 20px; color: green; }
+
+table { margin: auto; border-collapse: collapse; }
+td, th { border: 1px solid #ccc; padding: 8px; }
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🎯 Algebra Rapid Fire</h1>
+
+<div id="startScreen">
+    <input type="text" id="name" placeholder="Student Name"><br><br>
+    <button onclick="startGame()">Start Game</button>
+</div>
+
+<div id="gameScreen" style="display:none;">
+    ⏳ Time: <span id="timer">60</span> sec |
+    ⭐ Score: <span id="score">0</span>
+
+```
+<div id="question"></div>
+
+<div id="options"></div>
+```
+
+</div>
+
+<div id="resultScreen" style="display:none;">
+    <h2 id="result"></h2>
+    <button onclick="restart()">Play Again</button>
+</div>
+
+<h3>🏆 Leaderboard</h3>
+<table>
+<tr><th>Name</th><th>Score</th></tr>
+<tbody id="board"></tbody>
+</table>
+
+</div>
+
+<script>
+
+let score = 0;
+let timeLeft = 60;
+let timer;
+let correctAnswer;
+let scores = JSON.parse(localStorage.getItem("algScores")) || [];
+
+let correctSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
+let wrongSound = new Audio("https://www.soundjay.com/buttons/sounds/button-10.mp3");
+
+function generateQuestion(){
+    let a = Math.floor(Math.random()*10)+1;
+    let x = Math.floor(Math.random()*10)+1;
+    let b = Math.floor(Math.random()*10)+1;
+
+    let c = a*x + b;
+
+    correctAnswer = x;
+
+    document.getElementById("question").innerText =
+        `${a}x + ${b} = ${c}`;
+
+    let options = [x];
+
+    while(options.length < 4){
+        let wrong = Math.floor(Math.random()*15);
+        if(!options.includes(wrong)) options.push(wrong);
+    }
+
+    options.sort(()=>Math.random()-0.5);
+
+    let box = document.getElementById("options");
+    box.innerHTML = "";
+
+    options.forEach(opt=>{
+        let btn = document.createElement("button");
+        btn.innerText = opt;
+        btn.className = "option";
+
+        btn.onclick = ()=>{
+            if(opt === correctAnswer){
+                score += 5;
+                correctSound.play();
+                btn.classList.add("correct");
+            } else {
+                score -= 2;
+                wrongSound.play();
+                btn.classList.add("wrong");
+            }
+
+            document.getElementById("score").innerText = score;
+
+            setTimeout(generateQuestion, 500);
+        };
+
+        box.appendChild(btn);
+    });
+}
+
+function startGame(){
+    let name = document.getElementById("name").value;
+    if(!name){ alert("Enter name"); return; }
+
+    score = 0;
+    timeLeft = 60;
+
+    document.getElementById("startScreen").style.display="none";
+    document.getElementById("gameScreen").style.display="block";
+
+    generateQuestion();
+
+    timer = setInterval(()=>{
+        timeLeft--;
+        document.getElementById("timer").innerText = timeLeft;
+
+        if(timeLeft <= 0){
+            clearInterval(timer);
+            finishGame();
+        }
+    },1000);
+}
+
+function finishGame(){
+    let name = document.getElementById("name").value;
+
+    scores.push({name, score});
+    localStorage.setItem("algScores", JSON.stringify(scores));
+
+    updateBoard();
+
+    document.getElementById("gameScreen").style.display="none";
+    document.getElementById("resultScreen").style.display="block";
+
+    document.getElementById("result").innerText =
+        `${name}, Your Score: ${score}`;
+}
+
+function updateBoard(){
+    let board = document.getElementById("board");
+
+    scores.sort((a,b)=>b.score-a.score);
+
+    board.innerHTML = "";
+
+    scores.forEach(s=>{
+        board.innerHTML += `
+        <tr>
+            <td>${s.name}</td>
+            <td>${s.score}</td>
+        </tr>`;
+    });
+}
+
+function restart(){
+    document.getElementById("startScreen").style.display="block";
+    document.getElementById("resultScreen").style.display="none";
+}
+
+updateBoard();
+
+</script>
+
+</body>
+</html>
