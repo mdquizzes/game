@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title> CLASSROOM BATTLE (Missile PRO + Celebration)</title>
+<style>
+body{margin:0;background:#000;color:#fff;font-family:sans-serif;text-align:center;overflow:auto;cursor:crosshair}
+
+/* BG */
+body::before{content:"";position:fixed;inset:0;background:url('https://images.unsplash.com/photo-1504711434969-e33886168f5c') center/cover no-repeat;opacity:.35;z-index:-2}
+body::after{content:"";position:fixed;inset:0;background:radial-gradient(circle,transparent 40%,black 90%);z-index:-1}
+
+h1{margin:10px}
+
+.container{display:flex;justify-content:space-around}
+.team{width:40%;transition:.3s}
+.active{box-shadow:0 0 30px #00ffcc}
+
+/* LAUNCHER */
+.launcher{width:90px;height:25px;background:#222;margin:8px auto;border-radius:10px;position:relative}
+.barrel{width:70px;height:6px;background:#aaa;position:absolute;top:10px;left:20px;transform-origin:left center;transition:transform .2s ease}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.cell{background:#1a2d3a;padding:8px;border-radius:6px;position:relative;box-shadow: inset 0 0 8px #000, 0 3px 6px rgba(0,0,0,.6)}
+.cell:hover{transform:scale(1.08)}
+
+/* ===== MISSILE PRO (shorter tail) ===== */
+.missile{
+  position:absolute;
+  width:22px;
+  height:8px;
+  border-radius:4px;
+  background:linear-gradient(90deg,#ffe066,#ff8c00,#ff3d00);
+  box-shadow:0 0 16px rgba(255,140,0,.9);
+  transform-origin:center;
+}
+/* nose */
+.missile::before{
+  content:"";position:absolute;right:-8px;top:-4px;
+  border-left:8px solid #ff3d00;
+  border-top:8px solid transparent;
+  border-bottom:8px solid transparent;
+}
+/* flame core (SHORT) */
+.missile::after{
+  content:"";position:absolute;left:-10px;top:2px;width:10px;height:4px;
+  background:linear-gradient(90deg,#ffea00,#ff6d00);
+  filter:blur(1.5px);
+}
+/* trailing smoke particles (lighter + shorter) */
+.trail{
+  position:absolute;width:5px;height:5px;border-radius:50%;
+  background:rgba(255,200,120,.85);
+  filter:blur(1px);
+  pointer-events:none;
+}
+
+/* EXPLOSION PRO */
+.explosion{
+  position:absolute;width:30px;height:30px;border-radius:50%;
+  background:radial-gradient(circle,#fff176,#ff8f00,#d50000);
+  box-shadow:0 0 40px rgba(255,140,0,.9);
+  animation:explode .7s forwards;
+}
+@keyframes explode{0%{transform:scale(1);opacity:1}100%{transform:scale(6);opacity:0}}
+
+/* particles */
+.particle{position:absolute;width:6px;height:6px;border-radius:50%;background:orange;animation:particle .7s forwards}
+@keyframes particle{to{transform:translate(var(--x),var(--y));opacity:0}}
+
+/* smoke tile */
+.smoke{background:url('https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif') center/cover}
+.hit{background:#00ffcc;color:#000}
+
+/* PANEL */
+.panel{display:flex;justify-content:space-around;margin:10px}
+.box{width:40%;background:#111;padding:10px;border-radius:10px}
+input{width:60px;text-align:center;border:none;border-radius:5px;padding:5px;-webkit-text-security:disc}
+.dot{width:14px;height:14px;background:#0f0;border-radius:50%;display:inline-block;margin:3px}
+.revealed{background:yellow;color:#000;font-size:10px;display:flex;align-items:center;justify-content:center}
+
+/* WIN + CELEBRATION */
+.win{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;font-size:40px;z-index:20}
+
+  #startBtn{
+  padding:8px 16px;
+  border:none;
+  border-radius:8px;
+  background:#0099ff;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+#startBtn.active{
+  background:#00aaff;
+  box-shadow:0 0 15px #00aaff;
+}
+
+</style>
+</head>
+<body>
+
+<h1>🔥 CLASSROOM BATTLE 🔥</h1>
+<p style="margin-top:-8px; font-size:14px; opacity:0.7;">
+  Prepared By : Mukesh Sir
+</p>
+<button id="startBtn" onclick="startGame()">START</button>
+
+<div class="panel">
+  <div class="box">
+    <h3>Group A</h3>
+    <input type="text" maxlength="2" onkeydown="addNum(event,'A')">
+    <div id="listA"></div>
+  </div>
+  <div class="box">
+    <h3>Group B</h3>
+    <input type="text" maxlength="2" onkeydown="addNum(event,'B')">
+    <div id="listB"></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="team active" id="teamABox">
+    <div class="launcher"><div class="barrel" id="barrelA"></div></div>
+    <div id="teamA" class="grid"></div>
+  </div>
+  <div class="team" id="teamBBox">
+    <div class="launcher"><div class="barrel" id="barrelB"></div></div>
+    <div id="teamB" class="grid"></div>
+  </div>
+</div>
+
+<script>
+let A=new Set(),B=new Set();
+let turn='A',start=false;
+
+function addNum(e,t){
+  if(e.key==='Enter'){
+    const v=parseInt(e.target.value);
+    if(v>=1&&v<=100){(t==='A'?A:B).add(v);addDot(t==='A'?'listA':'listB')}
+    e.target.value='';
+  }
+}
+function addDot(id){const d=document.createElement('div');d.className='dot';document.getElementById(id).appendChild(d)}
+
+function createGrid(id,t){
+  const g=document.getElementById(id);
+  for(let i=1;i<=100;i++){
+    const c=document.createElement('div');
+    c.className='cell';c.innerText=String(i).padStart(2,'0');
+    c.onclick=()=>attack(i,c,t);
+    g.appendChild(c);
+  }
+}
+
+function attack(num,cell,target){
+  if(!start||cell.classList.contains('smoke'))return;
+  if((turn==='A'&&target==='teamB')||(turn==='B'&&target==='teamA')){
+    const barrel=document.getElementById(turn==='A'?'barrelA':'barrelB');
+    const rT=cell.getBoundingClientRect();
+    const rB=barrel.getBoundingClientRect();
+
+    const dx=rT.left-rB.left;
+    const dy=rT.top-rB.top;
+    const angle=Math.atan2(dy,dx)*180/Math.PI;
+    barrel.style.transform=`rotate(${angle}deg)`;
+
+    const m=document.createElement('div');m.className='missile';document.body.appendChild(m);
+
+    const sx=rB.left+30, sy=rB.top+12;
+    const ex=rT.left+20, ey=rT.top+20;
+    const rot=Math.atan2(ey-sy, ex-sx)*180/Math.PI;
+    m.style.transform=`rotate(${rot}deg)`;
+
+    let p=0;
+    const interval=setInterval(()=>{
+      p+=0.02;
+      const arc=120;
+      const x=sx+(ex-sx)*p;
+      const y=sy+(ey-sy)*p - arc*Math.sin(Math.PI*p);
+      m.style.left=x+'px';
+      m.style.top=y+'px';
+
+      // shorter, lighter trail
+      for(let i=0;i<1;i++){
+        const t=document.createElement('div');t.className='trail';
+        t.style.left=(x-8+Math.random()*4)+'px';
+        t.style.top=(y+Math.random()*4)+'px';
+        document.body.appendChild(t);
+        setTimeout(()=>t.remove(),220);
+      }
+
+      if(p>=1){clearInterval(interval);m.remove();explode(ex,ey,cell,target,num)}
+    },16);
+
+    turn=turn==='A'?'B':'A';updateTurn();
+  }
+}
+
+function explode(x,y,cell,target,num){
+  const e=document.createElement('div');e.className='explosion';e.style.left=x+'px';e.style.top=y+'px';document.body.appendChild(e);
+
+  // particles burst
+  for(let i=0;i<14;i++){
+    const p=document.createElement('div');p.className='particle';
+    p.style.setProperty('--x',(Math.random()*140-70)+'px');
+    p.style.setProperty('--y',(Math.random()*140-70)+'px');
+    p.style.left=x+'px';p.style.top=y+'px';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),700);
+  }
+
+  try{ new Audio('https://www.fesliyanstudios.com/play-mp3/387').play(); }catch(e){}
+
+  document.body.animate([{transform:'scale(1)'},{transform:'scale(1.05)'},{transform:'scale(1)'}],{duration:200});
+
+  setTimeout(()=>e.remove(),700);
+
+  cell.innerText='';cell.classList.add('smoke');
+
+  let hit=false;
+  if(target==='teamA'&&A.has(num)){hit=true;A.delete(num);reveal('listA',num)}
+  if(target==='teamB'&&B.has(num)){hit=true;B.delete(num);reveal('listB',num)}
+  if(hit)cell.classList.add('hit');
+
+  if(A.size===0)win('Group B');
+  if(B.size===0)win('Group A');
+}
+
+function reveal(id,num){
+  const list=document.getElementById(id);
+  for(const d of list.children){
+    if(!d.classList.contains('revealed')){d.innerText=String(num).padStart(2,'0');d.classList.add('revealed');break}
+  }
+}
+
+function updateTurn(){
+  document.getElementById('teamABox').classList.toggle('active',turn==='A');
+  document.getElementById('teamBBox').classList.toggle('active',turn==='B');
+}
+
+// ===== CELEBRATION =====
+function win(team){
+  const d=document.createElement('div');
+  d.className='win';
+  d.innerHTML=`<div style="text-align:center">
+    <div style="font-size:48px;margin-bottom:10px">🏆 ${team} WINS!</div>
+    <div style="font-size:18px;opacity:.8">Victory Achieved • Battlefield Secured</div>
+  </div>`;
+  document.body.appendChild(d);
+
+  for(let i=0;i<8;i++){
+    setTimeout(()=>fireworkBurst(window.innerWidth*Math.random(), window.innerHeight*Math.random()*0.6+50), i*150);
+  }
+  startConfetti();
+  try{ new Audio('https://www.fesliyanstudios.com/play-mp3/6677').play(); }catch(e){}
+}
+
+function fireworkBurst(x,y){
+  for(let i=0;i<24;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    const angle=Math.random()*Math.PI*2;
+    const dist=60+Math.random()*80;
+    p.style.setProperty('--x', Math.cos(angle)*dist+'px');
+    p.style.setProperty('--y', Math.sin(angle)*dist+'px');
+    p.style.left=x+'px';
+    p.style.top=y+'px';
+    p.style.background = `hsl(${Math.floor(Math.random()*360)},100%,60%)`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),700);
+  }
+}
+
+let confettiInterval;
+function startConfetti(){
+  stopConfetti();
+  confettiInterval = setInterval(()=>{
+    for(let i=0;i<20;i++){
+      const c=document.createElement('div');
+      c.style.position='fixed';
+      c.style.width='6px';
+      c.style.height='10px';
+      c.style.left=Math.random()*100+'vw';
+      c.style.top='-10px';
+      c.style.background=`hsl(${Math.random()*360},90%,60%)`;
+      c.style.transform=`rotate(${Math.random()*360}deg)`;
+      c.style.zIndex=30;
+      c.animate([
+        {transform:`translateY(0) rotate(0deg)`},
+        {transform:`translateY(${window.innerHeight+20}px) rotate(${720*Math.random()}deg)`}
+      ],{duration:2000+Math.random()*1500, easing:'linear'});
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),3500);
+    }
+  },200);
+}
+function stopConfetti(){ if(confettiInterval) clearInterval(confettiInterval); }
+
+function startGame(){
+  start=true;
+  document.getElementById("startBtn").classList.add("active");
+}
+
+createGrid('teamA','teamA');
+createGrid('teamB','teamB');
+</script>
+
+</body>
+</html>
