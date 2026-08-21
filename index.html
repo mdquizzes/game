@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MD Educational Games</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(135deg, #eef2ff, #f8fafc);
+            min-height: 100vh;
+            color: #1e293b;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        header {
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: white;
+            padding: 45px 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        header h1 {
+            font-size: 38px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 17px;
+            opacity: 0.9;
+        }
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .container {
+            width: 92%;
+            max-width: 1200px;
+            margin: 40px auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .section-title h2 {
+            font-size: 28px;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .section-title p {
+            color: #64748b;
+        }
+
+        /* =========================
+           GAME GRID
+        ========================= */
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+        }
+
+        /* =========================
+           GAME CARD
+        ========================= */
+
+        .game-card {
+            background: white;
+            border-radius: 18px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(37,99,235,0.18);
+        }
+
+        .game-icon {
+            font-size: 55px;
+            margin-bottom: 15px;
+        }
+
+        .game-card h3 {
+            font-size: 21px;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .game-card p {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .play-btn {
+            display: inline-block;
+            text-decoration: none;
+            background: #2563eb;
+            color: white;
+            padding: 11px 24px;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .play-btn:hover {
+            background: #1d4ed8;
+        }
+
+        /* =========================
+           DIFFERENT CARD COLORS
+        ========================= */
+
+        .quiz .play-btn {
+            background: #7c3aed;
+        }
+
+        .maths .play-btn {
+            background: #059669;
+        }
+
+        .science .play-btn {
+            background: #0284c7;
+        }
+
+        .medical .play-btn {
+            background: #dc2626;
+        }
+
+        .puzzle .play-btn {
+            background: #ea580c;
+        }
+
+        .multiplayer .play-btn {
+            background: #db2777;
+        }
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+            margin-top: 60px;
+            background: #0f172a;
+            color: #cbd5e1;
+            text-align: center;
+            padding: 25px 15px;
+            font-size: 14px;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 600px) {
+
+            header {
+                padding: 35px 15px;
+            }
+
+            header h1 {
+                font-size: 29px;
+            }
+
+            header p {
+                font-size: 15px;
+            }
+
+            .container {
+                width: 90%;
+                margin: 30px auto;
+            }
+
+            .section-title h2 {
+                font-size: 24px;
+            }
+
+            .game-card {
+                padding: 25px 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =========================
+         HEADER
+    ========================= -->
+
+    <header>
+
+        <h1>🎮 MD Educational Games</h1>
+
+        <p>
+            Learn • Play • Challenge Yourself
+        </p>
+
+    </header>
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================= -->
+
+    <main class="container">
+
+        <div class="section-title">
+
+            <h2>Choose Your Game</h2>
+
+            <p>
+                Select a game and start learning!
+            </p>
+
+        </div>
+
+
+        <div class="games-grid">
+
+
+            <!-- =========================
+                 QUIZ GAME
+            ========================= -->
+
+            <div class="game-card quiz">
+
+                <div class="game-icon">
+                    🧠
+                </div>
+
+                <h3>Quiz Challenge</h3>
+
+                <p>
+                    Test your knowledge with exciting educational quizzes.
+                </p>
+
+                <a href="quiz.html" class="play-btn">
+                    ▶ Play Quiz
+                </a>
+
+            </div>
+
+
+            <!-- =========================
+                 MATHS GAME
+            ========================= -->
+
+            <div class="game-card maths">
+
+                <div class="game-icon">
+                    🧮
+                </div>
+
+                <h3>Maths Challenge</h3>
+
+                <p>
+                    Improve your calculation skills with fun maths challenges.
+                </p>
+
+                <a href="maths.html" class="play-btn">
+                    ▶ Play Maths
+                </a>
+
+            </div>
+
+
+            <!-- =========================
+                 SCIENCE GAME
+            ========================= -->
+
+            <div class="game-card science">
+
+                <div class="game-icon">
+                    🔬
+                </div>
+
+                <h3>Science Challenge</h3>
+
+                <p>
+                    Explore science concepts through interactive games.
+                </p>
+
+                <a href="science.html" class="play-btn">
+                    ▶ Play Science
+                </a>
+
+            </div>
+
+
+            <!-- =========================
+                 MEDICAL GAME
+            ========================= -->
+
+            <div class="game-card medical">
+
+                <div class="game-icon">
+                    🩺
+                </div>
+
+                <h3>Medical Games</h3>
+
+                <p>
+                    Learn anatomy, physiology and medical concepts through games.
+                </p>
+
+                <a href="medical.html" class="play-btn">
+                    ▶ Play Medical
+                </a>
+
+            </div>
+
+
+            <!-- =========================
+                 PUZZLE GAME
+            ========================= -->
+
+            <div class="game-card puzzle">
+
+                <div class="game-icon">
+                    🧩
+                </div>
+
+                <h3>Puzzle Games</h3>
+
+                <p>
+                    Solve educational puzzles and challenge your brain.
+                </p>
+
+                <a href="puzzle.html" class="play-btn">
+                    ▶ Play Puzzle
+                </a>
+
+            </div>
+
+
+            <!-- =========================
+                 MULTIPLAYER GAME
+            ========================= -->
+
+            <div class="game-card multiplayer">
+
+                <div class="game-icon">
+                    🏆
+                </div>
+
+                <h3>Multiplayer Games</h3>
+
+                <p>
+                    Compete with classmates and see who scores the highest.
+                </p>
+
+                <a href="multiplayer.html" class="play-btn">
+                    ▶ Play Game
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================= -->
+
+    <footer>
+
+        © 2026 MD Educational Games
+        <br>
+        Learn • Play • Improve
+
+    </footer>
+
+
+</body>
+</html>
