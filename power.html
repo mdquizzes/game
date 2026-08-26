@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Prime Factor Drag Game PRO</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #0f172a;
+      color: white;
+    }
+
+    h1 { margin-top: 20px; }
+
+    .pair {
+      display: inline-flex;
+      align-items: flex-start;
+      margin: 10px;
+      font-size: 20px;
+    }
+
+    .baseBox {
+      width: 60px;
+      height: 40px;
+      border: 2px dashed #ccc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #1e293b;
+      margin-right: 2px;
+    }
+
+    .powerBox {
+      width: 30px;
+      height: 25px;
+      border: 2px dashed #ccc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #1e293b;
+      font-size: 14px;
+      position: relative;
+      top: -10px;
+    }
+
+    .draggable {
+      padding: 8px 12px;
+      background: #38bdf8;
+      margin: 5px;
+      display: inline-block;
+      cursor: grab;
+      border-radius: 5px;
+    }
+
+    .area {
+      margin: 20px;
+    }
+
+    button {
+      padding: 10px;
+      margin: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🔥 Prime Factor Drag Game PRO</h1>
+
+<div id="startScreen">
+  <input id="playerName" placeholder="Enter name">
+  <br><br>
+  <button onclick="startGame()">Start</button>
+</div>
+
+<div id="gameScreen" style="display:none;">
+  <h3 id="player"></h3>
+  <h2 id="targetNumber"></h2>
+
+  <div id="dropArea"></div>
+
+  <h3 id="liveResult"></h3>
+
+  <div class="area">
+    <h3>Drag Bases</h3>
+    <div id="bases"></div>
+
+    <h3>Drag Powers</h3>
+    <div id="powers"></div>
+  </div>
+</div>
+
+<script>
+let target = 0;
+
+function startGame() {
+  let name = document.getElementById("playerName").value;
+  if(!name) return alert("Enter name");
+
+  document.getElementById("startScreen").style.display = "none";
+  document.getElementById("gameScreen").style.display = "block";
+  document.getElementById("player").innerText = "Player: " + name;
+
+  newQuestion();
+}
+
+// Generate number with at least 3 primes and different powers
+function generateSmartNumber() {
+  const primes = [2,3,5,7,11];
+  let chosen = [];
+
+  // pick 3 different primes
+  while(chosen.length < 3) {
+    let p = primes[Math.floor(Math.random()*primes.length)];
+    if(!chosen.includes(p)) chosen.push(p);
+  }
+
+  // assign different powers
+  let powers = [];
+  while(powers.length < 3) {
+    let pow = Math.floor(Math.random()*3) + 1; // 1–3
+    if(!powers.includes(pow)) powers.push(pow);
+  }
+
+  let num = 1;
+  for(let i=0;i<3;i++) {
+    num *= Math.pow(chosen[i], powers[i]);
+  }
+
+  return {num, factors: chosen.map((p,i)=>[p,powers[i]])};
+}
+
+function newQuestion() {
+  let data = generateSmartNumber();
+
+  target = data.num;
+  let factors = data.factors;
+
+  document.getElementById("targetNumber").innerText = "Target: " + target;
+
+  createDropBoxes(factors.length);
+  createDraggables(factors);
+}
+
+function createDropBoxes(n) {
+  let area = document.getElementById("dropArea");
+  area.innerHTML = "";
+
+  for(let i=0;i<n;i++) {
+    let div = document.createElement("div");
+    div.className = "pair";
+
+    div.innerHTML = `
+      <div class="baseBox" ondrop="drop(event)" ondragover="allowDrop(event)" data-type="base"></div>
+      <div class="powerBox" ondrop="drop(event)" ondragover="allowDrop(event)" data-type="power"></div>
+    `;
+
+    area.appendChild(div);
+  }
+}
+
+function createDraggables(factors) {
+  let basesDiv = document.getElementById("bases");
+  let powersDiv = document.getElementById("powers");
+
+  basesDiv.innerHTML = "";
+  powersDiv.innerHTML = "";
+
+  factors.forEach(([b,p]) => {
+
+    let base = document.createElement("div");
+    base.className = "draggable";
+    base.innerText = b;
+    base.draggable = true;
+    base.dataset.type = "base";
+    base.dataset.value = b;
+    base.ondragstart = drag;
+    basesDiv.appendChild(base);
+
+    let power = document.createElement("div");
+    power.className = "draggable";
+    power.innerText = p;
+    power.draggable = true;
+    power.dataset.type = "power";
+    power.dataset.value = p;
+    power.ondragstart = drag;
+    powersDiv.appendChild(power);
+
+  });
+}
+
+function allowDrop(ev) {
+  ev.preventDefault();
+}
+
+function drag(ev) {
+  ev.dataTransfer.setData("type", ev.target.dataset.type);
+  ev.dataTransfer.setData("value", ev.target.dataset.value);
+}
+
+function drop(ev) {
+  ev.preventDefault();
+
+  let type = ev.dataTransfer.getData("type");
+  let value = ev.dataTransfer.getData("value");
+
+  if(ev.target.dataset.type === type) {
+    ev.target.innerText = value;
+    ev.target.dataset.value = value;
+  }
+
+  updateResult();
+}
+
+function updateResult() {
+  let pairs = document.querySelectorAll(".pair");
+
+  let result = 1;
+  let expression = "";
+
+  pairs.forEach(pair => {
+    let b = pair.children[0].dataset.value;
+    let p = pair.children[1].dataset.value;
+
+    if(b && p) {
+      result *= Math.pow(b, p);
+      expression += `${b}^${p} × `;
+    }
+  });
+
+  expression = expression.slice(0,-2);
+
+  document.getElementById("liveResult").innerText =
+    expression + " = " + result;
+
+  if(result === target) {
+    setTimeout(() => {
+      alert("🎉 Perfect Match! Next Player!");
+      newQuestion();
+    }, 500);
+  }
+}
+</script>
+
+</body>
+</html>
