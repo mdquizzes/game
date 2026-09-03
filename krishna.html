@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>HAPPY JANMASHTAMI</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+font-family:Arial;
+}
+
+body{
+background:#efe4c5;
+padding:20px;
+text-align:center;
+}
+
+.wrapper{
+max-width:700px;
+margin:auto;
+}
+
+h1{
+color:#6a2414;
+margin-bottom:10px;
+}
+
+.panel{
+background:white;
+padding:20px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.15);
+}
+
+input{
+padding:12px;
+width:220px;
+font-size:18px;
+border-radius:10px;
+border:2px solid #ccc;
+}
+
+button{
+padding:12px 18px;
+border:none;
+background:#7d2f1b;
+color:white;
+font-size:18px;
+border-radius:10px;
+cursor:pointer;
+}
+
+button:hover{
+background:#582011;
+}
+
+#board{
+
+margin:20px auto;
+
+width:min(90vw,420px);
+
+height:min(90vw,420px);
+
+display:grid;
+
+grid-template-columns:
+repeat(4,1fr);
+
+gap:2px;
+
+background:#44291f;
+
+padding:2px;
+
+border-radius:14px;
+
+}
+
+.tile{
+
+background-size:400% 400%;
+
+cursor:pointer;
+
+transition:.2s;
+
+}
+
+.tile:hover{
+
+transform:scale(.97);
+
+}
+
+.blank{
+
+background:#f8f8f8;
+
+}
+
+.stats{
+
+margin-top:15px;
+
+font-size:20px;
+
+}
+
+#message{
+
+font-size:28px;
+
+color:green;
+
+margin-top:15px;
+
+}
+
+.leader{
+
+margin-top:25px;
+
+}
+
+.score{
+
+padding:10px;
+
+margin:6px;
+
+background:#f3f3f3;
+
+border-radius:10px;
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<h1>Sliding Puzzle</h1>
+
+<div class="panel">
+
+<div>
+
+<input
+id="name"
+placeholder="Enter Student Name">
+
+<button onclick="start()">
+Start Puzzle
+</button>
+
+</div>
+
+<div class="stats">
+
+👤
+<span id="player"></span>
+
+&nbsp;&nbsp;
+
+Moves:
+<span id="moves">0</span>
+
+</div>
+
+<div id="board"></div>
+
+<div id="message"></div>
+
+<div class="leader">
+
+<h2>🏆 Leaderboard</h2>
+
+<div id="scores"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const SIZE=4;
+
+/*
+REPLACE THIS IMAGE
+WITH YOUR OWN URL
+*/
+
+const IMAGE=
+"https://mdquizzes.github.io/mdquizzes/images/ganita.jpg";
+
+let tiles=[];
+
+let moves=0;
+
+let player="";
+
+const board=
+document.getElementById("board");
+
+function start(){
+
+player=
+document
+.getElementById("name")
+.value
+.trim();
+
+if(!player){
+
+alert("Enter name");
+
+return;
+
+}
+
+document
+.getElementById("player")
+.innerText=
+player;
+
+moves=0;
+
+document
+.getElementById("message")
+.innerHTML="";
+
+make();
+
+}
+
+function make(){
+
+tiles=[];
+
+for(
+let i=0;
+i<15;
+i++
+){
+
+tiles.push(i);
+
+}
+
+tiles.push(null);
+
+shuffle();
+
+draw();
+
+update();
+
+}
+
+function shuffle(){
+
+for(
+let i=0;
+i<500;
+i++
+){
+
+let blank=
+tiles.indexOf(null);
+
+let possible=[];
+
+let r=
+Math.floor(blank/4);
+
+let c=
+blank%4;
+
+if(r>0)
+possible.push(blank-4);
+
+if(r<3)
+possible.push(blank+4);
+
+if(c>0)
+possible.push(blank-1);
+
+if(c<3)
+possible.push(blank+1);
+
+let move=
+possible[
+Math.floor(
+Math.random()
+*
+possible.length
+)];
+
+[
+
+tiles[blank],
+
+tiles[move]
+
+]
+
+=
+
+[
+
+tiles[move],
+
+tiles[blank]
+
+];
+
+}
+
+}
+
+function draw(){
+
+board.innerHTML="";
+
+tiles.forEach(
+
+(tile,index)=>{
+
+let div=
+document
+.createElement("div");
+
+div.className=
+"tile";
+
+if(
+tile===null
+){
+
+div.classList
+.add("blank");
+
+}
+
+else{
+
+let x=
+(tile%4)
+*
+33.33;
+
+let y=
+Math.floor(tile/4)
+*
+33.33;
+
+div.style
+.backgroundImage=
+`url(${IMAGE})`;
+
+div.style
+.backgroundPosition=
+`${x}% ${y}%`;
+
+}
+
+div.onclick=
+()=>slide(index);
+
+board.appendChild(div);
+
+}
+
+);
+
+}
+
+function slide(i){
+
+let blank=
+tiles.indexOf(null);
+
+let valid=
+
+Math.abs(
+i-blank
+)==4
+
+||
+
+(
+
+Math.abs(
+i-blank
+)==1
+
+&&
+
+Math.floor(i/4)
+
+===
+
+Math.floor(blank/4)
+
+);
+
+if(!valid)
+return;
+
+[
+
+tiles[i],
+
+tiles[blank]
+
+]
+
+=
+
+[
+
+tiles[blank],
+
+tiles[i]
+
+];
+
+moves++;
+
+update();
+
+draw();
+
+check();
+
+}
+
+function update(){
+
+document
+.getElementById("moves")
+.innerText=
+moves;
+
+}
+
+function check(){
+
+for(
+let i=0;
+i<15;
+i++
+){
+
+if(
+tiles[i]
+!==i
+)
+return;
+
+}
+
+document
+.getElementById(
+"message"
+)
+
+.innerHTML=
+
+"🎉 Puzzle Completed!";
+
+save();
+
+}
+
+function save(){
+
+let scores=
+
+JSON.parse(
+
+localStorage
+.getItem(
+"gpuzzle"
+)
+
+||
+
+"[]"
+
+);
+
+scores.push({
+
+name:player,
+
+moves
+
+});
+
+scores.sort(
+
+(a,b)=>
+
+a.moves
+
+-
+
+b.moves
+
+);
+
+scores=
+scores.slice(0,10);
+
+localStorage
+.setItem(
+
+"gpuzzle",
+
+JSON.stringify(scores)
+
+);
+
+show();
+
+}
+
+function show(){
+
+let data=
+
+JSON.parse(
+
+localStorage
+.getItem(
+"gpuzzle"
+)
+
+||
+
+"[]"
+
+);
+
+let html="";
+
+data.forEach(
+
+(s,i)=>{
+
+html+=
+
+`
+
+<div class="score">
+
+${i+1}
+
+🏆
+
+${s.name}
+
+—
+
+${s.moves}
+
+moves
+
+</div>
+
+`;
+
+}
+
+);
+
+document
+.getElementById(
+"scores"
+)
+.innerHTML=
+html;
+
+}
+
+show();
+
+</script>
+
+</body>
+
+</html>
