@@ -2,1422 +2,572 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roman Bubble Challenge v2</title>
 
-<meta name="viewport"
-content="width=device-width,
-initial-scale=1.0">
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<title>
-Roman Bubble Challenge v2
-</title>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC0dDCPvN4L96ye0YuxippaIUHnEUwnT90",
+    authDomain: "mdquizzes-c255a.firebaseapp.com",
+    projectId: "mdquizzes-c255a",
+    storageBucket: "mdquizzes-c255a.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let currentGameUser = null;
+  auth.onAuthStateChanged((user) => {
+    currentGameUser = user;
+    if (user) {
+      const nameInput = document.getElementById("playerName");
+      if (nameInput && !nameInput.value) {
+        nameInput.value = user.displayName || user.email.split("@")[0];
+      }
+    }
+  });
+
+  // Global Function jo game score Firestore me save karegi
+  async function saveGameScoreToCloud(gameTitle, finalScore) {
+    if (!currentGameUser) {
+      console.log("Guest player - not saving to cloud");
+      return;
+    }
+
+    const name = currentGameUser.displayName || currentGameUser.email.split("@")[0];
+
+    try {
+      // 1. History save
+      await db.collection("gameScores").add({
+        uid: currentGameUser.uid,
+        name: name,
+        game: gameTitle,
+        score: Number(finalScore),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // 2. Global Leaderboard profile update
+      await db.collection("gameProfiles").doc(currentGameUser.uid).set({
+        name: name,
+        email: currentGameUser.email,
+        totalScore: firebase.firestore.FieldValue.increment(Number(finalScore)),
+        lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      console.log("Score synced with Firestore!");
+    } catch (err) {
+      console.error("Score save error:", err);
+    }
+  }
+</script>
 
 <style>
-
 *{
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:
-Arial,sans-serif;
+font-family: Arial,sans-serif;
 }
 
 body{
-
 height:100vh;
-
 overflow:hidden;
-
-background:
-linear-gradient(
-135deg,
-#4facfe,
-#00f2fe
-);
-
+background: linear-gradient(135deg, #4facfe, #00f2fe);
 }
 
 #gameArea{
-
 position:absolute;
-
 inset:0;
-
 overflow:hidden;
-
 }
 
 #setupScreen{
-
 position:absolute;
-
 inset:0;
-
-background:
-rgba(
-0,
-0,
-0,
-0.6
-);
-
+background: rgba(0, 0, 0, 0.6);
 display:flex;
-
 justify-content:center;
-
 align-items:center;
-
 z-index:1000;
-
 }
 
 .setupBox{
-
 background:white;
-
 padding:25px;
-
 border-radius:20px;
-
 width:340px;
-
 text-align:center;
-
 }
 
 .setupBox h1{
-
 margin-bottom:15px;
-
 font-size:28px;
-
 }
 
 .setupBox input,
 .setupBox select{
-
 width:100%;
-
 padding:12px;
-
 margin:10px 0;
-
 font-size:16px;
-
 }
 
 .setupBox button{
-
 width:100%;
-
 padding:14px;
-
 font-size:18px;
-
 border:none;
-
 background:#2196f3;
-
 color:white;
-
 border-radius:10px;
-
 cursor:pointer;
-
 }
 
 .setupBox button:hover{
-
 background:#1976d2;
-
 }
 
 #hud{
-
 position:absolute;
-
 top:10px;
-
 left:10px;
-
 right:260px;
-
 display:flex;
-
 justify-content:space-between;
-
 font-weight:bold;
-
 font-size:20px;
-
 color:white;
-
 z-index:999;
-
 }
 
 #leaderboard{
-
 position:absolute;
-
 top:0;
-
 right:0;
-
 width:250px;
-
 height:100%;
-
-background:
-rgba(
-0,
-0,
-0,
-0.25
-);
-
+background: rgba(0, 0, 0, 0.25);
 color:white;
-
 padding:10px;
-
 overflow-y:auto;
-
 z-index:999;
-
 }
 
 #leaderboard h3{
-
 text-align:center;
-
 margin-bottom:10px;
-
 }
 
 #leaderList{
-
 list-style:none;
-
 padding:0;
-
 }
 
 #leaderList li{
-
 padding:6px;
-
-border-bottom:
-1px solid
-rgba(
-255,
-255,
-255,
-0.25
-);
-
+border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .bubble{
-
 position:absolute;
-
 width:82px;
-
 height:82px;
-
 border-radius:50%;
-
 display:flex;
-
 align-items:center;
-
 justify-content:center;
-
 font-size:22px;
-
 font-weight:bold;
-
 cursor:pointer;
-
 user-select:none;
-
 color:white;
-
 transition:.2s;
-
-box-shadow:
-0 0 20px
-rgba(
-255,
-255,
-255,
-0.4
-);
-
+box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
 }
 
 .roman{
-
 background:#ff9800;
-
 }
 
 .number{
-
 background:#4caf50;
-
 }
 
 .selected{
-
 outline:5px solid yellow;
-
-box-shadow:
-0 0 10px white,
-0 0 25px yellow,
-0 0 50px yellow;
-
-animation:
-pulse .6s infinite;
-
+box-shadow: 0 0 10px white, 0 0 25px yellow, 0 0 50px yellow;
+animation: pulse .6s infinite;
 }
 
 @keyframes pulse{
-
-0%{
-transform:
-scale(1.15);
-}
-
-50%{
-transform:
-scale(1.30);
-}
-
-100%{
-transform:
-scale(1.15);
-}
-
+0%{ transform: scale(1.15); }
+50%{ transform: scale(1.30); }
+100%{ transform: scale(1.15); }
 }
 
 .burst{
-
-animation:
-burst .35s forwards;
-
+animation: burst .35s forwards;
 }
 
 @keyframes burst{
-
 100%{
-
-transform:
-scale(2);
-
+transform: scale(2);
 opacity:0;
-
 }
-
 }
 
 #floatingMessage{
-
 position:absolute;
-
 left:50%;
-
 top:50%;
-
-transform:
-translate(
--50%,
--50%
-);
-
+transform: translate(-50%, -50%);
 font-size:42px;
-
 font-weight:bold;
-
 pointer-events:none;
-
 opacity:0;
-
 z-index:9999;
-
 transition:.4s;
-
 color:yellow;
-
 }
 
 #gameOver{
-
 display:none;
-
 position:absolute;
-
 inset:0;
-
-background:
-rgba(
-0,
-0,
-0,
-0.75
-);
-
+background: rgba(0, 0, 0, 0.75);
 justify-content:center;
-
 align-items:center;
-
 z-index:1001;
-
 }
 
 .overBox{
-
 background:white;
-
 padding:25px;
-
 border-radius:20px;
-
 width:340px;
-
 text-align:center;
-
 }
 
 .overBox button{
-
 margin-top:15px;
-
 padding:12px 20px;
-
 font-size:18px;
-
 cursor:pointer;
-
 }
 
 @media(max-width:700px){
-
-#leaderboard{
-
-width:160px;
-
+#leaderboard{ width:160px; }
+#hud{ right:160px; font-size:14px; }
+.bubble{ width:65px; height:65px; font-size:18px; }
 }
-
-#hud{
-
-right:160px;
-
-font-size:14px;
-
-}
-
-.bubble{
-
-width:65px;
-
-height:65px;
-
-font-size:18px;
-
-}
-
-}
-
 </style>
-
 </head>
 
 <body>
 
 <div id="setupScreen">
-
 <div class="setupBox">
-
-<h1>
-Roman Bubble Challenge
-</h1>
-
-<input
-id="playerName"
-placeholder=
-"Enter Player Name">
-
+<h1>Roman Bubble Challenge</h1>
+<input id="playerName" placeholder="Enter Player Name">
 <select id="timeSelect">
-
-<option value="30">
-30 Seconds
-</option>
-
-<option
-value="60"
-selected>
-60 Seconds
-</option>
-
-<option value="120">
-120 Seconds
-</option>
-
+<option value="30">30 Seconds</option>
+<option value="60" selected>60 Seconds</option>
+<option value="120">120 Seconds</option>
 </select>
-
 <select id="levelSelect">
-
-<option value="easy">
-Easy (1–20)
-</option>
-
-<option value="medium">
-Medium (1–50)
-</option>
-
-<option value="hard">
-Hard (1–100)
-</option>
-
+<option value="easy">Easy (1–20)</option>
+<option value="medium">Medium (1–50)</option>
+<option value="hard">Hard (1–100)</option>
 </select>
-
-<button
-onclick="startGame()">
-
-Start Game
-
-</button>
-
+<button onclick="startGame()">Start Game</button>
 </div>
-
 </div>
 
 <div id="hud">
-
-<div>
-Player:
-<span id="playerInfo">
--
-</span>
-</div>
-
-<div>
-Score:
-<span id="score">
-0
-</span>
-</div>
-
-<div>
-Combo:
-<span id="combo">
-0
-</span>
-</div>
-
-<div>
-Time:
-<span id="time">
-60
-</span>
-</div>
-
+<div>Player: <span id="playerInfo">-</span></div>
+<div>Score: <span id="score">0</span></div>
+<div>Combo: <span id="combo">0</span></div>
+<div>Time: <span id="time">60</span></div>
 </div>
 
 <div id="leaderboard">
-
-<h3>
-🏆 Leaders
-</h3>
-
- <button
-onclick="resetLeaderboard()"
-style="
-width:100%;
-padding:8px;
-margin-bottom:10px;
-border:none;
-border-radius:8px;
-background:#ff4444;
-color:white;
-cursor:pointer;
-">
-
+<h3>🏆 Leaders</h3>
+<button onclick="resetLeaderboard()" style="width:100%; padding:8px; margin-bottom:10px; border:none; border-radius:8px; background:#ff4444; color:white; cursor:pointer;">
 Reset Leaderboard
-
 </button>
- 
-<ul id="leaderList">
-</ul>
-
+<ul id="leaderList"></ul>
 </div>
 
-<div id="gameArea">
-</div>
-
-<div id="floatingMessage">
-</div>
+<div id="gameArea"></div>
+<div id="floatingMessage"></div>
 
 <div id="gameOver">
-
 <div class="overBox">
-
-<h2>
-Game Over
-</h2>
-
-<p id="finalScore">
-</p>
-
-<button
-onclick=
-"location.reload()">
-
-Play Again
-
-</button>
-
+<h2>Game Over</h2>
+<p id="finalScore"></p>
+<button onclick="location.reload()">Play Again</button>
+</div>
 </div>
 
-</div>
 <script>
-
-const gameArea =
-document.getElementById(
-"gameArea"
-);
-
-const HIGH_SCORE_KEY =
-"romanBubbleHighScore";
-
-const LEADERBOARD_KEY =
-"romanBubbleLeaderboard";
+const gameArea = document.getElementById("gameArea");
+const HIGH_SCORE_KEY = "romanBubbleHighScore";
+const LEADERBOARD_KEY = "romanBubbleLeaderboard";
 
 let score = 0;
-
 let combo = 0;
-
 let selected = null;
-
 let gameTime = 60;
-
 let maxNumber = 20;
-
-let currentLevel =
-"easy";
-
+let currentLevel = "easy";
 let timerInterval;
-
 let spawnInterval;
 
 renderLeaderboard();
 
 function renderLeaderboard(){
-
-const data =
-
-JSON.parse(
-
-localStorage.getItem(
-LEADERBOARD_KEY
-) || "[]"
-
-);
-
-let html = "";
-
-data.forEach(
-(item,index)=>{
-
-html += `
-
-<li>
-
-${index+1}.
-${item.name}
-
--
-
-${item.score}
-
-</li>
-
-`;
-
-});
-
-document.getElementById(
-"leaderList"
-).innerHTML = html;
-
+  const data = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]");
+  let html = "";
+  data.forEach((item,index)=>{
+    html += `<li>${index+1}. ${item.name} - ${item.score}</li>`;
+  });
+  document.getElementById("leaderList").innerHTML = html;
 }
 
 function toRoman(num){
-
-const values = [
-
-[100,"C"],
-[90,"XC"],
-[50,"L"],
-[40,"XL"],
-[10,"X"],
-[9,"IX"],
-[5,"V"],
-[4,"IV"],
-[1,"I"]
-
-];
-
-let result = "";
-
-for(
-let [value,symbol]
-of values
-){
-
-while(
-num >= value
-){
-
-result += symbol;
-
-num -= value;
-
-}
-
-}
-
-return result;
-
+  const values = [
+    [100,"C"], [90,"XC"], [50,"L"], [40,"XL"],
+    [10,"X"], [9,"IX"], [5,"V"], [4,"IV"], [1,"I"]
+  ];
+  let result = "";
+  for(let [value,symbol] of values){
+    while(num >= value){
+      result += symbol;
+      num -= value;
+    }
+  }
+  return result;
 }
 
 function startGame(){
+  const playerName = document.getElementById("playerName").value.trim();
+  if(!playerName){
+    alert("Please enter player name");
+    return;
+  }
 
-const playerName =
+  document.getElementById("playerInfo").textContent = playerName;
+  gameTime = parseInt(document.getElementById("timeSelect").value);
+  currentLevel = document.getElementById("levelSelect").value;
 
-document.getElementById(
-"playerName"
-)
+  if(currentLevel === "easy") maxNumber = 20;
+  if(currentLevel === "medium") maxNumber = 50;
+  if(currentLevel === "hard") maxNumber = 100;
 
-.value
+  document.getElementById("setupScreen").style.display = "none";
+  document.getElementById("time").textContent = gameTime;
 
-.trim();
+  timerInterval = setInterval(()=>{
+    gameTime--;
+    document.getElementById("time").textContent = gameTime;
+    if(gameTime <= 0){
+      endGame();
+    }
+  },1000);
 
-if(!playerName){
-
-alert(
-"Please enter player name"
-);
-
-return;
-
-}
-
-document.getElementById(
-"playerInfo"
-).textContent =
-playerName;
-
-gameTime =
-
-parseInt(
-
-document.getElementById(
-"timeSelect"
-).value
-
-);
-
-currentLevel =
-
-document.getElementById(
-"levelSelect"
-).value;
-
-if(
-currentLevel ===
-"easy"
-){
-
-maxNumber = 20;
-
-}
-
-if(
-currentLevel ===
-"medium"
-){
-
-maxNumber = 50;
-
-}
-
-if(
-currentLevel ===
-"hard"
-){
-
-maxNumber = 100;
-
-}
-
-document.getElementById(
-"setupScreen"
-).style.display =
-"none";
-
-document.getElementById(
-"time"
-).textContent =
-gameTime;
-
-timerInterval =
-
-setInterval(()=>{
-
-gameTime--;
-
-document.getElementById(
-"time"
-).textContent =
-gameTime;
-
-if(
-gameTime <= 0
-){
-
-endGame();
-
-}
-
-},1000);
-
-spawnInterval =
-
-setInterval(
-spawnPair,
-1100
-);
-
+  spawnInterval = setInterval(spawnPair, 1100);
 }
 
 function spawnPair(){
-
-const num =
-
-Math.floor(
-
-Math.random()
-*
-maxNumber
-
-)
-
-+1;
-
-const roman =
-
-toRoman(
-num
-);
-
-createBubble(
-
-roman,
-
-"roman",
-
-num
-
-);
-
-createBubble(
-
-num,
-
-"number",
-
-num
-
-);
-
-}
- function createBubble(
-
-text,
-type,
-value
-
-){
-
-const bubble =
-
-document.createElement(
-"div"
-);
-
-bubble.className =
-
-`bubble ${type}`;
-
-bubble.textContent =
-text;
-
-bubble.dataset.type =
-type;
-
-bubble.dataset.value =
-value;
-
-bubble.style.left =
-
-Math.random()
-
-*
-
-(
-window.innerWidth
-- 320
-)
-
-+ "px";
-
-let y;
-
-if(
-currentLevel ===
-"easy"
-){
-
-y =
-
-Math.random()
-
-*
-
-(
-window.innerHeight
-- 220
-);
-
-}else{
-
-y = -100;
-
+  const num = Math.floor(Math.random() * maxNumber) + 1;
+  const roman = toRoman(num);
+  createBubble(roman, "roman", num);
+  createBubble(num, "number", num);
 }
 
-bubble.style.top =
-y + "px";
+function createBubble(text, type, value){
+  const bubble = document.createElement("div");
+  bubble.className = `bubble ${type}`;
+  bubble.textContent = text;
+  bubble.dataset.type = type;
+  bubble.dataset.value = value;
+  bubble.style.left = Math.random() * (window.innerWidth - 320) + "px";
 
-gameArea.appendChild(
-bubble
-);
+  let y;
+  if(currentLevel === "easy"){
+    y = Math.random() * (window.innerHeight - 220);
+  }else{
+    y = -100;
+  }
 
-bubble.addEventListener(
+  bubble.style.top = y + "px";
+  gameArea.appendChild(bubble);
 
-"click",
+  bubble.addEventListener("click", function(e){
+    e.stopPropagation();
+    selectBubble(bubble);
+  });
 
-function(e){
+  let speed;
+  if(currentLevel === "easy"){
+    speed = 0.25 + Math.random() * 0.30;
+  } else if(currentLevel === "medium"){
+    speed = 1.20 + Math.random() * 1.20;
+  } else {
+    speed = 2.50 + Math.random() * 2.50;
+  }
 
-e.stopPropagation();
+  const drift = (Math.random() - 0.5) * 1.5;
 
-selectBubble(
-bubble
-);
+  const move = setInterval(()=>{
+    if(currentLevel === "easy"){
+      bubble.style.left = (parseFloat(bubble.style.left) + drift) + "px";
+      y -= speed;
+    } else {
+      y += speed;
+    }
+    bubble.style.top = y + "px";
 
+    if(y > window.innerHeight + 120 || y < -120){
+      if(selected === bubble){
+        bubble.classList.remove("selected");
+        selected = null;
+        showWrongPair();
+      }
+      clearInterval(move);
+      bubble.remove();
+    }
+  }, 16);
 }
 
-);
+function selectBubble(bubble){
+  if(selected === null){
+    selected = bubble;
+    bubble.classList.add("selected");
+    return;
+  }
 
-let speed;
+  if(selected === bubble) return;
 
-if(
-currentLevel ===
-"easy"
-){
-
-speed =
-
-0.25
-
-+
-
-Math.random()
-*0.30;
-
-}
-else if(
-
-currentLevel ===
-"medium"
-
-){
-
-speed =
-
-1.20
-
-+
-
-Math.random()
-*1.20;
-
-}
-else{
-
-speed =
-
-2.50
-
-+
-
-Math.random()
-*2.50;
-
+  if(selected.dataset.value === bubble.dataset.value && selected.dataset.type !== bubble.dataset.type){
+    correctMatch(selected, bubble);
+  } else {
+    selected.classList.remove("selected");
+    showWrongPair();
+    selected = null;
+    combo = 0;
+    document.getElementById("combo").textContent = 0;
+  }
 }
 
-const drift =
+function correctMatch(first, second){
+  burst(first);
+  burst(second);
+  selected = null;
+  combo++;
+  document.getElementById("combo").textContent = combo;
 
-(
-Math.random()
--0.5
-)
+  let points = 2;
+  if(combo >= 3){
+    points = 3;
+  }
 
-*1.5;
-
-const move =
-
-setInterval(()=>{
-
-if(
-currentLevel ===
-"easy"
-){
-
-bubble.style.left =
-
-(
-parseFloat(
-bubble.style.left
-)
-
-+
-
-drift
-
-)
-
-+"px";
-
-y -= speed;
-
-}
-else{
-
-y += speed;
-
+  score += points;
+  document.getElementById("score").textContent = score;
+  showMessage("+" + points, "yellow");
 }
 
-bubble.style.top =
-y+"px";
-
-if(
-
-y >
-
-window.innerHeight
-+120
-
-||
-
-y < -120
-
-){
-
-if(
-selected === bubble
-){
-
-bubble.classList.remove(
-"selected"
-);
-
-selected = null;
-
-showWrongPair();
-
-}
-
-clearInterval(
-move
-);
-
-bubble.remove();
-
-}
-
-},16);
-
-}
-
-function selectBubble(
-bubble
-){
-
-if(
-selected === null
-){
-
-selected = bubble;
-
-bubble.classList.add(
-"selected"
-);
-
-return;
-
-}
-
-if(
-selected === bubble
-){
-
-return;
-
-}
-
-if(
-
-selected.dataset.value
-
-===
-
-bubble.dataset.value
-
-&&
-
-selected.dataset.type
-
-!==
-
-bubble.dataset.type
-
-){
-
-correctMatch(
-
-selected,
-
-bubble
-
-);
-
-}
-else{
-
-selected.classList.remove(
-"selected"
-);
-
-showWrongPair();
-
-selected = null;
-
-combo = 0;
-
-document.getElementById(
-"combo"
-).textContent =
-0;
-
-}
-
-}
-
-function correctMatch(
-
-first,
-second
-
-){
-
-burst(first);
-
-burst(second);
-
-selected = null;
-
-combo++;
-
-document.getElementById(
-"combo"
-).textContent =
-combo;
-
-let points = 2;
-
-if(
-combo >= 3
-){
-
-points = 3;
-
-}
-
-score += points;
-
-document.getElementById(
-"score"
-).textContent =
-score;
-
-showMessage(
-"+"+points,
-"yellow"
-);
-
-}
-
-function burst(
-bubble
-){
-
-bubble.classList.add(
-"burst"
-);
-
-setTimeout(()=>{
-
-bubble.remove();
-
-},350);
-
+function burst(bubble){
+  bubble.classList.add("burst");
+  setTimeout(()=>{
+    bubble.remove();
+  }, 350);
 }
 
 function showWrongPair(){
-
-showMessage(
-"❌ Wrong Pair",
-"#ff4444"
-);
-
-}
- function showMessage(
-text,
-color
-){
-
-const msg =
-
-document.getElementById(
-"floatingMessage"
-);
-
-msg.innerHTML = text;
-
-msg.style.color = color;
-
-msg.style.opacity = "1";
-
-msg.style.transform =
-
-"translate(-50%,-50%) scale(1.3)";
-
-setTimeout(()=>{
-
-msg.style.opacity = "0";
-
-msg.style.transform =
-
-"translate(-50%,-50%) scale(1)";
-
-},700);
-
+  showMessage("❌ Wrong Pair", "#ff4444");
 }
 
-gameArea.addEventListener(
-
-"click",
-
-function(e){
-
-if(
-e.target === gameArea
-){
-
-if(selected){
-
-selected.classList.remove(
-"selected"
-);
-
-selected = null;
-
+function showMessage(text, color){
+  const msg = document.getElementById("floatingMessage");
+  msg.innerHTML = text;
+  msg.style.color = color;
+  msg.style.opacity = "1";
+  msg.style.transform = "translate(-50%,-50%) scale(1.3)";
+  setTimeout(()=>{
+    msg.style.opacity = "0";
+    msg.style.transform = "translate(-50%,-50%) scale(1)";
+  }, 700);
 }
 
-}
+gameArea.addEventListener("click", function(e){
+  if(e.target === gameArea && selected){
+    selected.classList.remove("selected");
+    selected = null;
+  }
+});
 
-}
-
-);
- 
 function resetLeaderboard(){
+  const ok = confirm("Reset leaderboard and high score?");
+  if(!ok) return;
 
-const ok = confirm(
-"Reset leaderboard and high score?"
-);
-
-if(!ok){
-return;
+  localStorage.removeItem(LEADERBOARD_KEY);
+  localStorage.removeItem(HIGH_SCORE_KEY);
+  document.getElementById("leaderList").innerHTML = "";
+  location.reload();
 }
 
-localStorage.removeItem(
-LEADERBOARD_KEY
-);
-
-localStorage.removeItem(
-HIGH_SCORE_KEY
-);
-
-document.getElementById(
-"leaderList"
-).innerHTML = "";
-
-location.reload();
-
-}
- 
 function endGame(){
+  clearInterval(timerInterval);
+  clearInterval(spawnInterval);
 
-clearInterval(
-timerInterval
-);
+  document.querySelectorAll(".bubble").forEach(b => b.remove());
 
-clearInterval(
-spawnInterval
-);
+  const playerName = document.getElementById("playerInfo").textContent;
 
-document
-.querySelectorAll(
-".bubble"
-)
-.forEach(
-b=>b.remove()
-);
+  let leaderboard = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]");
+  leaderboard.push({
+    name: playerName,
+    score: score
+  });
+  leaderboard.sort((a,b) => b.score - a.score);
+  leaderboard = leaderboard.slice(0,10);
+  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
 
-const playerName =
+  renderLeaderboard();
 
-document.getElementById(
-"playerInfo"
-).textContent;
+  // YAHAN PAR CLOUD SYNC CALL SET KIYA GAYA HAI
+  saveGameScoreToCloud("Roman-Bubble-Challenge", score);
 
-let leaderboard =
+  document.getElementById("finalScore").innerHTML = `
+    <h3>${playerName}</h3>
+    <br>
+    Final Score: <b>${score}</b>
+  `;
 
-JSON.parse(
+  document.getElementById("gameOver").style.display = "flex";
+}
 
-localStorage.getItem(
-LEADERBOARD_KEY
-) || "[]"
-
-);
-
-leaderboard.push({
-
-name: playerName,
-
-score: score
-
+window.addEventListener("resize", ()=>{
+  document.querySelectorAll(".bubble").forEach(b=>{
+    let left = parseFloat(b.style.left);
+    const maxLeft = window.innerWidth - 320;
+    if(left > maxLeft){
+      b.style.left = maxLeft + "px";
+    }
+  });
 });
-
-leaderboard.sort(
-(a,b)=>b.score-a.score
-);
-
-leaderboard =
-leaderboard.slice(0,10);
-
-localStorage.setItem(
-
-LEADERBOARD_KEY,
-
-JSON.stringify(
-leaderboard
-)
-
-);
-
-renderLeaderboard();
-
-document.getElementById(
-"finalScore"
-).innerHTML =
-
-`
-
-<h3>
-
-${playerName}
-
-</h3>
-
-<br>
-
-Final Score:
-
-<b>
-
-${score}
-
-</b>
-
-`;
-
-document.getElementById(
-"gameOver"
-).style.display =
-"flex";
-
-}
-
-window.addEventListener(
-
-"resize",
-
-()=>{
-
-document
-.querySelectorAll(
-".bubble"
-)
-.forEach(b=>{
-
-let left =
-
-parseFloat(
-b.style.left
-);
-
-const maxLeft =
-
-window.innerWidth
--320;
-
-if(
-left > maxLeft
-){
-
-b.style.left =
-maxLeft + "px";
-
-}
-
-});
-
-}
-
-);
-
 </script>
-
 </body>
 </html>
