@@ -5,72 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roman Bubble Challenge v2</title>
 
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyC0dDCPvN4L96ye0YuxippaIUHnEUwnT90",
-    authDomain: "mdquizzes-c255a.firebaseapp.com",
-    projectId: "mdquizzes-c255a",
-    storageBucket: "mdquizzes-c255a.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  let currentGameUser = null;
-  auth.onAuthStateChanged((user) => {
-    currentGameUser = user;
-    if (user) {
-      const nameInput = document.getElementById("playerName");
-      if (nameInput && !nameInput.value) {
-        nameInput.value = user.displayName || user.email.split("@")[0];
-      }
-    }
-  });
-
-  // Global Function jo game score Firestore me save karegi
-  async function saveGameScoreToCloud(gameTitle, finalScore) {
-    if (!currentGameUser) {
-      console.log("Guest player - not saving to cloud");
-      return;
-    }
-
-    const name = currentGameUser.displayName || currentGameUser.email.split("@")[0];
-
-    try {
-      // 1. History save
-      await db.collection("gameScores").add({
-        uid: currentGameUser.uid,
-        name: name,
-        game: gameTitle,
-        score: Number(finalScore),
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      // 2. Global Leaderboard profile update
-      await db.collection("gameProfiles").doc(currentGameUser.uid).set({
-        name: name,
-        email: currentGameUser.email,
-        totalScore: firebase.firestore.FieldValue.increment(Number(finalScore)),
-        lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-
-      console.log("Score synced with Firestore!");
-    } catch (err) {
-      console.error("Score save error:", err);
-    }
-  }
-</script>
+<!-- STEP 4.0: Link Common Game Bridge Script -->
+<script src="game-bridge.js"></script>
 
 <style>
 *{
@@ -138,6 +74,12 @@ cursor:pointer;
 background:#1976d2;
 }
 
+#authStatusNotice{
+font-size: 13px;
+margin-top: 10px;
+color: #475569;
+}
+
 #hud{
 position:absolute;
 top:10px;
@@ -157,7 +99,7 @@ top:0;
 right:0;
 width:250px;
 height:100%;
-background: rgba(0, 0, 0, 0.25);
+background: rgba(0, 0, 0, 0.7);
 color:white;
 padding:10px;
 overflow-y:auto;
@@ -167,6 +109,7 @@ z-index:999;
 #leaderboard h3{
 text-align:center;
 margin-bottom:10px;
+color: #facc15;
 }
 
 #leaderList{
@@ -266,6 +209,12 @@ font-size:18px;
 cursor:pointer;
 }
 
+#cloudSaveStatus{
+margin-top: 10px;
+font-weight: bold;
+font-size: 14px;
+}
+
 @media(max-width:700px){
 #leaderboard{ width:160px; }
 #hud{ right:160px; font-size:14px; }
@@ -279,18 +228,23 @@ cursor:pointer;
 <div id="setupScreen">
 <div class="setupBox">
 <h1>Roman Bubble Challenge</h1>
+
 <input id="playerName" placeholder="Enter Player Name">
+
 <select id="timeSelect">
 <option value="30">30 Seconds</option>
 <option value="60" selected>60 Seconds</option>
 <option value="120">120 Seconds</option>
 </select>
+
 <select id="levelSelect">
 <option value="easy">Easy (1–20)</option>
 <option value="medium">Medium (1–50)</option>
 <option value="hard">Hard (1–100)</option>
 </select>
+
 <button onclick="startGame()">Start Game</button>
+<div id="authStatusNotice">Connecting...</div>
 </div>
 </div>
 
@@ -302,11 +256,10 @@ cursor:pointer;
 </div>
 
 <div id="leaderboard">
-<h3>🏆 Leaders</h3>
-<button onclick="resetLeaderboard()" style="width:100%; padding:8px; margin-bottom:10px; border:none; border-radius:8px; background:#ff4444; color:white; cursor:pointer;">
-Reset Leaderboard
-</button>
-<ul id="leaderList"></ul>
+<h3>🏆 Live Leaders</h3>
+<ul id="leaderList">
+  <li style="text-align:center; color:#94a3b8;">Loading ranks...</li>
+</ul>
 </div>
 
 <div id="gameArea"></div>
@@ -316,14 +269,13 @@ Reset Leaderboard
 <div class="overBox">
 <h2>Game Over</h2>
 <p id="finalScore"></p>
+<div id="cloudSaveStatus"></div>
 <button onclick="location.reload()">Play Again</button>
 </div>
 </div>
 
 <script>
 const gameArea = document.getElementById("gameArea");
-const HIGH_SCORE_KEY = "romanBubbleHighScore";
-const LEADERBOARD_KEY = "romanBubbleLeaderboard";
 
 let score = 0;
 let combo = 0;
@@ -334,16 +286,14 @@ let currentLevel = "easy";
 let timerInterval;
 let spawnInterval;
 
-renderLeaderboard();
-
-function renderLeaderboard(){
-  const data = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]");
-  let html = "";
-  data.forEach((item,index)=>{
-    html += `<li>${index+1}. ${item.name} - ${item.score}</li>`;
-  });
-  document.getElementById("leaderList").innerHTML = html;
-}
+// =======================================================
+// STEP 4.1: Roman Bubble Game ke liye Live Leaderboard Start
+// =======================================================
+window.addEventListener("DOMContentLoaded", () => {
+  if (typeof subscribeToGameLeaderboard === "function") {
+    subscribeToGameLeaderboard("roman-bubble", "leaderList", 10);
+  }
+});
 
 function toRoman(num){
   const values = [
@@ -421,18 +371,18 @@ function createBubble(text, type, value){
 
   let speed;
   if(currentLevel === "easy"){
-    speed = 0.25 + Math.random() * 0.30;
+    speed = 0.25 + Math.random()*0.30;
   } else if(currentLevel === "medium"){
-    speed = 1.20 + Math.random() * 1.20;
+    speed = 1.20 + Math.random()*1.20;
   } else {
-    speed = 2.50 + Math.random() * 2.50;
+    speed = 2.50 + Math.random()*2.50;
   }
 
   const drift = (Math.random() - 0.5) * 1.5;
 
   const move = setInterval(()=>{
     if(currentLevel === "easy"){
-      bubble.style.left = (parseFloat(bubble.style.left) + drift) + "px";
+      bubble.style.left = (parseFloat(bubble.style.left) + drift) +"px";
       y -= speed;
     } else {
       y += speed;
@@ -518,16 +468,6 @@ gameArea.addEventListener("click", function(e){
   }
 });
 
-function resetLeaderboard(){
-  const ok = confirm("Reset leaderboard and high score?");
-  if(!ok) return;
-
-  localStorage.removeItem(LEADERBOARD_KEY);
-  localStorage.removeItem(HIGH_SCORE_KEY);
-  document.getElementById("leaderList").innerHTML = "";
-  location.reload();
-}
-
 function endGame(){
   clearInterval(timerInterval);
   clearInterval(spawnInterval);
@@ -536,27 +476,19 @@ function endGame(){
 
   const playerName = document.getElementById("playerInfo").textContent;
 
-  let leaderboard = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]");
-  leaderboard.push({
-    name: playerName,
-    score: score
-  });
-  leaderboard.sort((a,b) => b.score - a.score);
-  leaderboard = leaderboard.slice(0,10);
-  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard));
-
-  renderLeaderboard();
-
-  // YAHAN PAR CLOUD SYNC CALL SET KIYA GAYA HAI
-  saveGameScoreToCloud("Roman-Bubble-Challenge", score);
-
   document.getElementById("finalScore").innerHTML = `
     <h3>${playerName}</h3>
     <br>
     Final Score: <b>${score}</b>
   `;
-
   document.getElementById("gameOver").style.display = "flex";
+
+  // =======================================================
+  // STEP 4.2: Game Over hone par score Cloud me Save
+  // =======================================================
+  if (typeof submitFinalGameScore === "function") {
+    submitFinalGameScore("roman-bubble", score);
+  }
 }
 
 window.addEventListener("resize", ()=>{
