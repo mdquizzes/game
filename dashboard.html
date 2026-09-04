@@ -1,45 +1,232 @@
-<div class="dashboard-card" style="max-width:600px; margin:30px auto; background:#0f172a; color:white; padding:25px; border-radius:16px;">
-  <h2 style="color:#facc15;">🎮 Game Portal Dashboard</h2>
-  <hr style="border-color:#334155; margin:15px 0;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Dashboard - Live Rankings</title>
 
-  <div style="font-size:18px; margin-bottom:10px;">
-    Player: <span id="dashPlayerName" style="font-weight:bold; color:#38bdf8;">Loading...</span>
-  </div>
-  <div style="font-size:18px; margin-bottom:20px;">
-    Total Combined Games Score: <span id="dashTotalScore" style="font-weight:bold; color:#22c55e;">0</span> pts
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #090d16;
+    color: #f8fafc;
+    margin: 0;
+    padding: 20px;
+  }
+
+  .dash-container {
+    max-width: 650px;
+    margin: 0 auto;
+    background: #111827;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid #1e293b;
+  }
+
+  .header-card {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 5px solid #facc15;
+    margin-bottom: 24px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    background: #0f172a;
+    padding: 6px;
+    border-radius: 10px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #94a3b8;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.25s;
+  }
+
+  .tab-btn.active {
+    background: #facc15;
+    color: #0f172a;
+  }
+
+  .leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .leaderboard-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: #1e293b;
+    border-radius: 10px;
+    border: 1px solid #334155;
+  }
+
+  .rank-badge {
+    font-weight: bold;
+    width: 32px;
+  }
+
+  .rank-1 { color: #facc15; font-size: 18px; }
+  .rank-2 { color: #e2e8f0; font-size: 17px; }
+  .rank-3 { color: #f97316; font-size: 16px; }
+
+  .points-badge {
+    color: #facc15;
+    font-weight: 800;
+  }
+</style>
+</head>
+<body>
+
+<div class="dash-container">
+  <div class="header-card">
+    <h2 style="margin: 0 0 10px 0; color: #facc15;">🎮 Player Dashboard</h2>
+    <div>Player: <span id="dashPlayer" style="font-weight: bold; color: #38bdf8;">Connecting...</span></div>
+    <div style="margin-top: 5px;">My All-Time Total Score: <span id="dashTotal" style="font-weight: bold; color: #22c55e;">0</span> pts</div>
   </div>
 
-  <h3 style="color:#facc15; margin-top:25px;">🏆 Global Hall of Fame (All Games)</h3>
-  <ol id="globalRankingList" style="padding-left:20px; line-height:2;"></ol>
+  <h3 style="margin-bottom: 12px; color: #facc15;">🏆 Live Rankings</h3>
+  
+  <!-- Tabs Selector -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchFilter('day')">📅 Today</button>
+    <button class="tab-btn" onclick="switchFilter('month')">🗓 This Month</button>
+    <button class="tab-btn" onclick="switchFilter('year')">🌟 This Year</button>
+  </div>
+
+  <!-- Realtime Rank List -->
+  <ul id="leaderboardList" class="leaderboard-list">
+    <li style="text-align: center; color: #64748b; padding: 20px;">Loading ranks...</li>
+  </ul>
 </div>
 
 <script>
-  auth.onAuthStateChanged(async (user) => {
+  const firebaseConfig = {
+    apiKey: "AIzaSyC0dDCPvN4L96ye0YuxippaIUHnEUwnT90",
+    authDomain: "mdquizzes-c255a.firebaseapp.com",
+    projectId: "mdquizzes-c255a",
+    storageBucket: "mdquizzes-c255a.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let unsubscribeLeaderboard = null;
+  let activeFilter = "day";
+
+  // Login State Check
+  auth.onAuthStateChanged((user) => {
     if (user) {
       const name = user.displayName || user.email.split("@")[0];
-      document.getElementById("dashPlayerName").textContent = name;
+      document.getElementById("dashPlayer").textContent = name;
 
-      // Load logged-in student's combined total score
+      // Realtime listener for user profile score
       db.collection("gameProfiles").doc(user.uid).onSnapshot((doc) => {
         if (doc.exists) {
-          document.getElementById("dashTotalScore").textContent = doc.data().totalAllGamesScore || 0;
+          document.getElementById("dashTotal").textContent = doc.data().totalAllGamesScore || 0;
         }
       });
     } else {
-      document.getElementById("dashPlayerName").innerHTML = "<a href='https://cbsesir.com/p/login.html' style='color:#ef4444;'>Click to Login</a>";
+      document.getElementById("dashPlayer").innerHTML = "<a href='https://cbsesir.com/p/login.html' style='color:#ef4444;'>Please Login</a>";
+    }
+    
+    // Initial Load (Day Wise)
+    loadRankings("day");
+  });
+
+  // Switch Filter Function
+  function switchFilter(type) {
+    activeFilter = type;
+    document.querySelectorAll(".tab-btn").forEach((btn, idx) => {
+      btn.classList.remove("active");
+      if ((type === 'day' && idx === 0) || (type === 'month' && idx === 1) || (type === 'year' && idx === 2)) {
+        btn.classList.add("active");
+      }
+    });
+    loadRankings(type);
+  }
+
+  // Realtime Leaderboard Loader
+  function loadRankings(type) {
+    if (unsubscribeLeaderboard) {
+      unsubscribeLeaderboard(); // Old listener disconnect
     }
 
-    // Load Overall Top 10 Leaderboard across all games
-    db.collection("gameProfiles")
-      .orderBy("totalAllGamesScore", "desc")
-      .limit(10)
-      .onSnapshot((snap) => {
-        let html = "";
-        snap.forEach((d) => {
-          const p = d.data();
-          html += `<li><b>${p.name}</b> — <span style="color:#facc15;">${p.totalAllGamesScore || 0} pts</span></li>`;
-        });
-        document.getElementById("globalRankingList").innerHTML = html;
+    const now = new Date();
+    let query = db.collection("gameProfiles");
+
+    if (type === "day") {
+      const dayKey = now.toISOString().slice(0, 10);
+      query = query.where("currentDayKey", "==", dayKey).orderBy("dailyScore", "desc");
+    } else if (type === "month") {
+      const monthKey = now.toISOString().slice(0, 7);
+      query = query.where("currentMonthKey", "==", monthKey).orderBy("monthlyScore", "desc");
+    } else {
+      const yearKey = now.getFullYear().toString();
+      query = query.where("currentYearKey", "==", yearKey).orderBy("yearlyScore", "desc");
+    }
+
+    const listEl = document.getElementById("leaderboardList");
+
+    unsubscribeLeaderboard = query.limit(10).onSnapshot((snapshot) => {
+      if (snapshot.empty) {
+        listEl.innerHTML = `<li style="text-align: center; color: #64748b; padding: 20px;">No games recorded for this period yet!</li>`;
+        return;
+      }
+
+      let html = "";
+      let rank = 1;
+
+      snapshot.forEach((doc) => {
+        const item = doc.data();
+        let displayScore = (type === "day") ? item.dailyScore : (type === "month") ? item.monthlyScore : item.yearlyScore;
+        let badgeClass = rank === 1 ? "rank-1" : rank === 2 ? "rank-2" : rank === 3 ? "rank-3" : "";
+
+        html += `
+          <li class="leaderboard-item">
+            <div>
+              <span class="rank-badge ${badgeClass}">#${rank}</span>
+              <strong style="margin-left:8px;">${item.name || "Player"}</strong>
+            </div>
+            <span class="points-badge">${displayScore || 0} pts</span>
+          </li>
+        `;
+        rank++;
       });
-  });
+
+      listEl.innerHTML = html;
+    }, (err) => {
+      console.error("Leaderboard Error:", err);
+      // Agar composite index required ho to console me clickable link aayega
+    });
+  }
 </script>
+
+</body>
+</html>
