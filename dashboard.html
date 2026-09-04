@@ -1,0 +1,45 @@
+<div class="dashboard-card" style="max-width:600px; margin:30px auto; background:#0f172a; color:white; padding:25px; border-radius:16px;">
+  <h2 style="color:#facc15;">🎮 Game Portal Dashboard</h2>
+  <hr style="border-color:#334155; margin:15px 0;">
+
+  <div style="font-size:18px; margin-bottom:10px;">
+    Player: <span id="dashPlayerName" style="font-weight:bold; color:#38bdf8;">Loading...</span>
+  </div>
+  <div style="font-size:18px; margin-bottom:20px;">
+    Total Combined Games Score: <span id="dashTotalScore" style="font-weight:bold; color:#22c55e;">0</span> pts
+  </div>
+
+  <h3 style="color:#facc15; margin-top:25px;">🏆 Global Hall of Fame (All Games)</h3>
+  <ol id="globalRankingList" style="padding-left:20px; line-height:2;"></ol>
+</div>
+
+<script>
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      const name = user.displayName || user.email.split("@")[0];
+      document.getElementById("dashPlayerName").textContent = name;
+
+      // Load logged-in student's combined total score
+      db.collection("gameProfiles").doc(user.uid).onSnapshot((doc) => {
+        if (doc.exists) {
+          document.getElementById("dashTotalScore").textContent = doc.data().totalAllGamesScore || 0;
+        }
+      });
+    } else {
+      document.getElementById("dashPlayerName").innerHTML = "<a href='https://cbsesir.com/p/login.html' style='color:#ef4444;'>Click to Login</a>";
+    }
+
+    // Load Overall Top 10 Leaderboard across all games
+    db.collection("gameProfiles")
+      .orderBy("totalAllGamesScore", "desc")
+      .limit(10)
+      .onSnapshot((snap) => {
+        let html = "";
+        snap.forEach((d) => {
+          const p = d.data();
+          html += `<li><b>${p.name}</b> — <span style="color:#facc15;">${p.totalAllGamesScore || 0} pts</span></li>`;
+        });
+        document.getElementById("globalRankingList").innerHTML = html;
+      });
+  });
+</script>
