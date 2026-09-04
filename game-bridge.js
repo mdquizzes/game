@@ -1,16 +1,13 @@
-/* ==========================================================
-   MD QUIZZES & GAMES - CENTRAL GAME BRIDGE ENGINE
-   Handles Auth, Individual Game Leaderboards & Day/Month/Year Scores
-   ========================================================== */
+/* MD Quizzes - Central Game Bridge (Pure JavaScript) */
 
-// 1. Firebase Initialization Config
+// 1. Firebase Initialization
 const firebaseConfig = {
   apiKey: "AIzaSyC0dDCPvN4L96ye0YuxippaIUHnEUwnT90",
   authDomain: "mdquizzes-c255a.firebaseapp.com",
   projectId: "mdquizzes-c255a",
-  storageBucket: "mdquizzes-c255a.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  storageBucket: "mdquizzes-c255a.firebasestorage.app",
+  messagingSenderId: "510171455812",
+  appId: "1:510171455812:web:dcead5207dc1272aa9b711"
 };
 
 if (!firebase.apps.length) {
@@ -23,7 +20,7 @@ const db = firebase.firestore();
 let activePlayer = null;
 let activePlayerName = "Guest";
 
-// 2. Auto-Detect and Lock Current Logged-in User
+// 2. Auth State Detector
 auth.onAuthStateChanged((user) => {
   const playerField = document.getElementById("playerName");
   const loginStatus = document.getElementById("authStatusNotice");
@@ -32,7 +29,6 @@ auth.onAuthStateChanged((user) => {
     activePlayer = user;
     activePlayerName = user.displayName || user.email.split("@")[0];
 
-    // Name field lock taaki koi dusre ka naam na likh sake
     if (playerField) {
       playerField.value = activePlayerName;
       playerField.disabled = true;
@@ -51,18 +47,17 @@ auth.onAuthStateChanged((user) => {
     }
 
     if (loginStatus) {
-      loginStatus.innerHTML = `<span style="color:#ef4444;">⚠ Not logged in. Points will not be saved. <a href="https://cbsesir.com/p/login.html" target="_blank" style="color:#38bdf8; text-decoration:underline;">Login here</a></span>`;
+      loginStatus.innerHTML = `<span style="color:#ef4444;">⚠ Not logged in. Points will not be saved. <a href="https://cbsesir.com/p/login.html" target="_blank" style="color:#38bdf8;">Login here</a></span>`;
     }
   }
 });
 
-// 3. Individual Game Live Leaderboard Subscriber (Per Game High Score)
-function subscribeToGameLeaderboard(gameId, containerElementId, limitCount = 10) {
+// 3. Live Leaderboard (No Composite Index Needed)
+window.subscribeToGameLeaderboard = function(gameId, containerElementId, limitCount = 10) {
   const listEl = document.getElementById(containerElementId);
   if (!listEl) return;
 
-  db.collection("gameLeaderboards")
-    .where("gameId", "==", gameId)
+  db.collection(`lb_${gameId}`)
     .orderBy("highScore", "desc")
     .limit(limitCount)
     .onSnapshot((snapshot) => {
@@ -87,15 +82,15 @@ function subscribeToGameLeaderboard(gameId, containerElementId, limitCount = 10)
 
       listEl.innerHTML = html;
     }, (err) => {
-      console.warn("Individual leaderboard error:", err.message);
+      console.error("Leaderboard Error:", err);
+      listEl.innerHTML = `<li style='color:#ef4444; font-size:12px; padding:6px;'>Error: ${err.message}</li>`;
     });
-}
+};
 
 // 4. Save Final Score (Updates Game High Score + Day/Month/Year Global Scores)
-async function submitFinalGameScore(gameId, finalScore) {
+window.submitFinalGameScore = async function(gameId, finalScore) {
   const statusBox = document.getElementById("cloudSaveStatus");
 
-  // Without login check
   if (!activePlayer) {
     if (statusBox) {
       statusBox.innerHTML = `<span style="color:#ef4444;">Score not saved (Login required).</span>`;
@@ -104,33 +99,30 @@ async function submitFinalGameScore(gameId, finalScore) {
   }
 
   try {
-    if (statusBox) statusBox.textContent = "Syncing score to leaderboard...";
+    if (statusBox) statusBox.textContent = "Syncing score...";
 
     const points = Number(finalScore);
     const now = new Date();
 
-    // Day, Month, Year Keys formatting
-    const dayKey = now.toISOString().slice(0, 10);  // e.g. "2026-09-05"
-    const monthKey = now.toISOString().slice(0, 7); // e.g. "2026-09"
-    const yearKey = now.getFullYear().toString();   // e.g. "2026"
+    const dayKey = now.toISOString().slice(0, 10);
+    const monthKey = now.toISOString().slice(0, 7);
+    const yearKey = now.getFullYear().toString();
 
-    const userGameDocId = `${activePlayer.uid}_${gameId}`;
-    const gameLeaderboardRef = db.collection("gameLeaderboards").doc(userGameDocId);
-    const profileRef = db.collection("gameProfiles").doc(activePlayer.uid);
+    // Step A: Game High Score (Dedicated Collection per Game)
+    const gameRef = db.collection(`lb_${gameId}`).doc(activePlayer.uid);
+    const existingDoc = await gameRef.get();
 
-    // Step A: Update this Game's Personal High Score
-    const existingGameDoc = await gameLeaderboardRef.get();
-    if (!existingGameDoc.exists || (existingGameDoc.data().highScore || 0) < points) {
-      await gameLeaderboardRef.set({
+    if (!existingDoc.exists || (existingDoc.data().highScore || 0) < points) {
+      await gameRef.set({
         uid: activePlayer.uid,
         name: activePlayerName,
-        gameId: gameId,
         highScore: points,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
     }
 
-    // Step B: Calculate Day, Month, Year running totals for Dashboard
+    // Step B: Update Global Profile
+    const profileRef = db.collection("gameProfiles").doc(activePlayer.uid);
     const profileDoc = await profileRef.get();
     let profileData = profileDoc.exists ? profileDoc.data() : {};
 
@@ -146,7 +138,6 @@ async function submitFinalGameScore(gameId, finalScore) {
       ? (profileData.yearlyScore || 0) + points
       : points;
 
-    // Step C: Save to Student's Global Profile
     await profileRef.set({
       name: activePlayerName,
       email: activePlayer.email,
@@ -167,8 +158,8 @@ async function submitFinalGameScore(gameId, finalScore) {
     if (statusBox) {
       statusBox.innerHTML = `<span style="color:#22c55e;">✓ Score saved to Live Leaderboard!</span>`;
     }
-  } catch (error) {
-    console.error("Firestore score sync error:", error);
-    if (statusBox) statusBox.textContent = "Error saving score online.";
+  } catch (err) {
+    console.error("Firestore Save Error:", err);
+    if (statusBox) statusBox.textContent = "Error syncing score.";
   }
-}
+};
