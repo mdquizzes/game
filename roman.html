@@ -114,19 +114,19 @@
         .btn-logout { background: var(--red-light); color: var(--red); border: 1px solid #fecaca; }
         .btn-logout:hover { background: #fca5a5; }
 
-        /* 2. MAIN LAYOUT */
+        /* 2. WIDER MAIN LAYOUT */
         .arena-wrapper {
-            max-width: 1220px;
-            margin: 20px auto 35px auto;
+            max-width: 1400px;
+            margin: 18px auto 35px auto;
             padding: 0 16px;
             display: grid;
-            grid-template-columns: 1.65fr 1fr;
-            gap: 24px;
+            grid-template-columns: 2.1fr 0.9fr;
+            gap: 22px;
             flex: 1;
             width: 100%;
         }
 
-        /* 3. GAME PANEL & BUBBLE STAGE */
+        /* 3. GAME PANEL & WIDE BUBBLE STAGE */
         .game-panel {
             background: #ffffff;
             border: 1px solid var(--border-light);
@@ -136,6 +136,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            width: 100%;
         }
 
         .hud-stats {
@@ -156,10 +157,10 @@
         .level-indicator {
             background: var(--soft-blue);
             color: var(--primary-blue);
-            padding: 3px 10px;
+            padding: 4px 12px;
             border-radius: 8px;
             border: 1px solid #bfdbfe;
-            font-size: 11.5px;
+            font-size: 12px;
             font-weight: 800;
             text-transform: uppercase;
         }
@@ -186,9 +187,10 @@
             background: radial-gradient(circle at 50% 120%, #eff6ff 0%, #f8fafc 100%);
             border: 2px dashed #bfdbfe;
             border-radius: 18px;
-            height: 520px;
+            height: 560px;
             overflow: hidden;
             margin-bottom: 14px;
+            width: 100%;
         }
 
         .bubble-stage.shake-error {
@@ -206,8 +208,8 @@
         /* BUBBLE STYLES */
         .bubble {
             position: absolute;
-            width: 74px;
-            height: 74px;
+            width: 76px;
+            height: 76px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -218,6 +220,7 @@
             box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12), inset 0 3px 6px rgba(255, 255, 255, 0.85);
             transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             border: 3px solid #ffffff;
+            z-index: 10;
         }
 
         .bubble:hover { transform: scale(1.12); }
@@ -273,7 +276,6 @@
             100% { opacity: 0; transform: translateY(-45px) scale(1.3); }
         }
 
-        /* Sparkle particles */
         .sparkle {
             position: absolute;
             width: 8px;
@@ -307,17 +309,19 @@
         /* Level Selector Controls */
         .level-selector-box {
             display: flex;
-            gap: 10px;
-            margin: 16px 0 20px 0;
+            gap: 12px;
+            margin: 14px 0 20px 0;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .level-btn {
             background: #ffffff;
             border: 2px solid var(--border-light);
-            padding: 10px 18px;
+            padding: 11px 20px;
             border-radius: 12px;
             font-weight: 800;
-            font-size: 13.5px;
+            font-size: 14px;
             cursor: pointer;
             color: var(--text-dark);
             transition: all 0.2s ease;
@@ -339,7 +343,7 @@
             background: var(--primary-blue);
             color: #ffffff;
             border: none;
-            padding: 14px 38px;
+            padding: 14px 40px;
             border-radius: 12px;
             font-weight: 800;
             font-size: 16px;
@@ -358,6 +362,7 @@
             box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
+            width: 100%;
         }
 
         .leader-header {
@@ -392,11 +397,40 @@
         }
         .lead-item:hover { transform: translateX(3px); border-color: #cbd5e1; }
 
-        @media(max-width: 850px) {
-            .arena-wrapper { grid-template-columns: 1fr; }
-            .game-nav { flex-direction: column; gap: 12px; }
-            .bubble-stage { height: 430px; }
-            .level-selector-box { flex-direction: column; width: 100%; max-width: 250px; }
+        /* MOBILE SPECIFIC: LEADERBOARD BELOW GAME */
+        @media(max-width: 920px) {
+            .arena-wrapper { 
+                grid-template-columns: 1fr; 
+                margin: 10px auto 25px auto;
+                padding: 0 10px;
+                gap: 18px;
+            }
+            .game-panel {
+                padding: 16px 12px;
+            }
+            .bubble-stage { 
+                height: 470px; 
+            }
+            .bubble {
+                width: 68px;
+                height: 68px;
+                font-size: 15px;
+            }
+            .game-nav { 
+                flex-direction: column; 
+                gap: 10px; 
+                padding: 12px 16px;
+            }
+            .level-selector-box { 
+                flex-direction: column; 
+                width: 100%; 
+                max-width: 260px; 
+            }
+            .hud-stats {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+            .hud-stats b { font-size: 16px; }
         }
     </style>
 </head>
@@ -422,26 +456,26 @@
         </div>
     </nav>
 
-    <!-- 2. GAME ARENA -->
+    <!-- 2. GAME ARENA (RESPONSIVE GRID) -->
     <main class="arena-wrapper">
 
-        <!-- BUBBLE STAGE -->
+        <!-- PRIMARY GAME PANEL -->
         <div class="game-panel">
             <div class="hud-stats">
                 <div>⏱ Timer: <b id="timerVal" style="color:var(--accent-blue);">45s</b></div>
                 <div><span class="level-indicator" id="levelDisplay">EASY (1-20)</span></div>
                 <div>💥 Pairs: <b id="matchVal" style="color:var(--green);">0</b></div>
                 <div id="comboBadge" class="combo-badge">🔥 2X COMBO</div>
-                <div>⭐ Run Points: <b id="scoreVal" style="color:var(--gold);">0</b></div>
+                <div>⭐ Points: <b id="scoreVal" style="color:var(--gold);">0</b></div>
             </div>
 
             <div class="bubble-stage" id="bubbleStage">
                 <!-- START & DIFFICULTY OVERLAY -->
                 <div class="bubble-overlay" id="startOverlay">
-                    <div style="font-size: 48px; margin-bottom: 8px;">🫧</div>
+                    <div style="font-size: 46px; margin-bottom: 6px;">🫧</div>
                     <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--primary-blue); margin-bottom: 6px; font-weight: 900;">Roman Bubble Frenzy Pro</h2>
                     <p style="font-size: 13.5px; color:var(--text-muted); max-width: 440px; margin-bottom: 12px; line-height: 1.6;">
-                        Pop matching <b style="color:var(--accent-blue);">Blue Roman</b> &amp; <b style="color:var(--green);">Green Hindu</b> pairs (<b>+2 pts</b>)! Mismatched bubbles float away safely to the top without bursting!
+                        Pop matching <b style="color:var(--accent-blue);">Blue Roman</b> &amp; <b style="color:var(--green);">Green Hindu</b> pairs (<b>+2 pts</b>)! Mismatched bubbles float safely to the top without breaking!
                     </p>
 
                     <div style="font-size: 12px; font-weight: 800; color:var(--text-dark); text-transform: uppercase; margin-bottom: 6px;">Select Difficulty:</div>
@@ -460,11 +494,11 @@
             </div>
         </div>
 
-        <!-- REALTIME LEADERBOARD & STATS -->
+        <!-- REALTIME LEADERBOARD (Desktop Right, Mobile Bottom) -->
         <div class="leaderboard-panel">
             <div class="leader-header">
                 <h2>🏆 Roman Champions</h2>
-                <span style="font-size: 12.5px; color: var(--text-muted);">Realtime State High Scores</span>
+                <span style="font-size: 12.5px; color: var(--text-muted);">Realtime High Scores</span>
             </div>
 
             <div class="personal-card">
@@ -662,7 +696,7 @@
         });
 
         /* ==========================================================
-           DYNAMIC ROMAN GENERATOR & LEVEL POOLS (1-20, 1-50, 1-100)
+           ROMAN NUMBER SYSTEM & LEVEL GENERATOR
            ========================================================== */
         function toRoman(num) {
             const lookup = [
@@ -679,9 +713,17 @@
             return roman;
         }
 
-        let selectedLevel = 'easy'; // easy, medium, hard
+        let selectedLevel = 'easy';
         let activePairsPool = [];
         let decoyPool = [];
+
+        function buildPool(maxLimit) {
+            activePairsPool = [];
+            for (let i = 1; i <= maxLimit; i++) {
+                activePairsPool.push({ num: i, rom: toRoman(i) });
+            }
+            decoyPool = ["XIIX", "IIII", "VV", "LL", "XXXX", "IC", "VX", "DM", "99X", "IL"];
+        }
 
         function selectLevel(lvl) {
             selectedLevel = lvl;
@@ -689,27 +731,20 @@
             if (lvl === 'easy') {
                 document.getElementById('btnEasy').classList.add('active');
                 document.getElementById('levelDisplay').innerText = "EASY (1-20)";
+                buildPool(20);
             } else if (lvl === 'medium') {
                 document.getElementById('btnMed').classList.add('active');
                 document.getElementById('levelDisplay').innerText = "MEDIUM (1-50)";
+                buildPool(50);
             } else {
                 document.getElementById('btnHard').classList.add('active');
                 document.getElementById('levelDisplay').innerText = "HARD (1-100)";
+                buildPool(100);
             }
         }
 
-        function generateLevelPools() {
-            let max = 20;
-            if (selectedLevel === 'medium') max = 50;
-            if (selectedLevel === 'hard') max = 100;
-
-            activePairsPool = [];
-            for (let i = 1; i <= max; i++) {
-                activePairsPool.push({ num: i, rom: toRoman(i) });
-            }
-
-            decoyPool = ["XIIX", "IIII", "VV", "LL", "XXXX", "IC", "VX", "DM", "99X"];
-        }
+        // Initialize default pool
+        buildPool(20);
 
         let gameTimer = 45;
         let gameScore = 0;
@@ -728,7 +763,10 @@
             overlay.style.display = "none";
             document.querySelectorAll(".bubble").forEach(b => b.remove());
 
-            generateLevelPools();
+            // Re-verify pool for selected level
+            if (selectedLevel === 'easy') buildPool(20);
+            else if (selectedLevel === 'medium') buildPool(50);
+            else buildPool(100);
 
             gameTimer = 45;
             gameScore = 0;
@@ -752,7 +790,7 @@
                 if (count < 9) {
                     spawnPair();
                     if (Math.random() > 0.5) spawnDecoy();
-                    if (Math.random() < 0.16) spawnBonusClock();
+                    if (Math.random() < 0.18) spawnBonusClock();
                 }
             }, 2100);
 
@@ -775,7 +813,7 @@
         }
 
         function spawnPair() {
-            if (!isGameRunning) return;
+            if (!isGameRunning || activePairsPool.length === 0) return;
             const pair = activePairsPool[Math.floor(Math.random() * activePairsPool.length)];
             createBubble(pair.num, "hindu", pair.num, false, false);
             createBubble(pair.rom, "roman", pair.num, false, false);
@@ -800,9 +838,10 @@
             bubble.dataset.isDecoy = isDecoy ? "true" : "false";
             bubble.dataset.isBonus = isBonus ? "true" : "false";
 
-            const stageWidth = stage.clientWidth - 85;
-            const startX = Math.max(12, Math.floor(Math.random() * stageWidth));
-            let posY = stage.clientHeight - 85;
+            const bWidth = stage.clientWidth <= 600 ? 70 : 80;
+            const stageWidth = Math.max(50, stage.clientWidth - bWidth);
+            const startX = Math.max(8, Math.floor(Math.random() * stageWidth));
+            let posY = stage.clientHeight - bWidth - 10;
 
             bubble.style.left = startX + "px";
             bubble.style.top = posY + "px";
@@ -819,13 +858,14 @@
                 let curLeft = parseFloat(bubble.style.left) || startX;
                 curLeft += drift;
 
-                if (curLeft <= 5 || curLeft >= stageWidth) drift *= -1;
+                const currentStageWidth = Math.max(50, stage.clientWidth - bWidth);
+                if (curLeft <= 5 || curLeft >= currentStageWidth) drift *= -1;
 
                 bubble.style.left = curLeft + "px";
                 bubble.style.top = posY + "px";
 
-                // UPAR JAAKAR DISAPPEAR HOGA BINA BURST HUYE
-                if (posY <= -85) {
+                // Upar jaakar bina tute natural disappear
+                if (posY <= -90) {
                     clearInterval(floatInterval);
                     if (selectedBubble === bubble) selectedBubble = null;
                     bubble.remove();
@@ -893,7 +933,7 @@
                 return;
             }
 
-            // DUSRI BAAR WAHI BUBBLE TAP KIA TO UNSELECT
+            // DUSRI BAAR WAHI BUBBLE TAP KIYA TO UNSELECT
             if (selectedBubble === bubble) {
                 AudioFX.playPop();
                 selectedBubble.classList.remove("selected");
@@ -912,7 +952,7 @@
                     comboEl.innerText = `🔥 ${multiplier}X COMBO`;
                 }
 
-                // 2 POINTS PER RIGHT MATCH (with combo multiplier)
+                // 2 POINTS PER MATCH (multiplier ke sath)
                 const earnedPoints = 2 * multiplier;
                 gameScore += earnedPoints;
                 matchesCount++;
@@ -925,7 +965,7 @@
                 showFloatingScore(`+${earnedPoints}`, rect.left - sRect.left, rect.top - sRect.top);
                 triggerSparkles(rect.left - sRect.left + 35, rect.top - sRect.top + 35);
 
-                // Sirf Match hone par Bubble Popping Effect
+                // Right pair pop animation
                 bubble.style.transform = "scale(1.35)";
                 selectedBubble.style.transform = "scale(1.35)";
                 bubble.style.opacity = "0";
@@ -937,7 +977,7 @@
 
                 selectedBubble = null;
             } else {
-                // MISMATCH: BUBBLE DESTROY/BREAK NAHI HOGA, SIRF PENALTY & UNSELECT
+                // MISMATCH: BUBBLE DESTROY/BREAK NAHI HOGA, BAS UNSELECT & PENALTY
                 AudioFX.playWrong();
                 triggerWrongPenalty();
             }
@@ -952,7 +992,6 @@
             stage.classList.add("shake-error");
             setTimeout(() => stage.classList.remove("shake-error"), 350);
 
-            // Dono bubbles zinda rahenge, bas selection hat jayega aur upar jate rahenge
             if (selectedBubble) {
                 selectedBubble.classList.remove("selected");
                 selectedBubble = null;
