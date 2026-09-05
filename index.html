@@ -3,398 +3,534 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MD Educational Games - Smart Gaming Arena</title>
 
-    <title>MD Educational Games</title>
+    <!-- Professional Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        :root {
+            --navy-deep: #020917;
+            --navy-surface: #0b172d;
+            --gold: #ffd60a;
+            --gold-hover: #ffc300;
+            --cyan: #38bdf8;
+            --green: #10b981;
+            --border-subtle: rgba(255, 255, 255, 0.1);
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: linear-gradient(135deg, #eef2ff, #f8fafc);
+            background: linear-gradient(135deg, #020d20 0%, #061533 50%, #020917 100%);
             min-height: 100vh;
-            color: #1e293b;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
         }
 
         /* =========================
-           HEADER
+           1. TOP UNIFIED NAVIGATION
         ========================= */
+        .game-nav {
+            background: rgba(2, 9, 23, 0.95);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
 
-        header {
-            background: linear-gradient(135deg, #2563eb, #4f46e5);
-            color: white;
-            padding: 45px 20px;
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--gold);
+            font-family: 'Outfit', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+        }
+
+        .brand-tag {
+            background: rgba(255, 214, 10, 0.15);
+            border: 1px solid rgba(255, 214, 10, 0.3);
+            color: var(--gold);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .nav-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-status-text {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        .user-status-text b {
+            color: var(--gold);
+        }
+
+        .btn-action {
+            padding: 7px 15px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-home { background: rgba(255, 255, 255, 0.08); color: #fff; border: 1px solid var(--border-subtle); }
+        .btn-home:hover { background: rgba(255, 255, 255, 0.18); }
+
+        .btn-login { background: var(--gold); color: #000; }
+        .btn-login:hover { background: var(--gold-hover); transform: translateY(-1px); }
+
+        .btn-profile { background: var(--cyan); color: #00122e; }
+        .btn-profile:hover { background: #0284c7; color: #fff; transform: translateY(-1px); }
+
+        .btn-logout { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .btn-logout:hover { background: #ef4444; color: #fff; }
+
+        /* =========================
+           2. LIVE GAMER HUD STRIP
+        ========================= */
+        .gamer-hud-bar {
+            background: #020713;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 10px 0;
+            font-size: 13px;
+        }
+
+        .hud-container {
+            max-width: 1220px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .hud-stats-group {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #08162f;
+            padding: 4px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+        }
+
+        /* =========================
+           3. HERO BANNER
+        ========================= */
+        header.hero-banner {
             text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            padding: 45px 20px 25px 20px;
+            max-width: 900px;
+            margin: 0 auto;
         }
 
-        header h1 {
+        header.hero-banner h1 {
+            font-family: 'Outfit', sans-serif;
             font-size: 38px;
+            font-weight: 800;
+            color: #fff;
             margin-bottom: 10px;
+            letter-spacing: -0.5px;
         }
 
-        header p {
-            font-size: 17px;
-            opacity: 0.9;
+        header.hero-banner h1 span {
+            color: var(--gold);
+        }
+
+        header.hero-banner p {
+            font-size: 16px;
+            color: #94a3b8;
+            line-height: 1.6;
         }
 
         /* =========================
-           MAIN
+           4. GAME GRID & CARDS
         ========================= */
-
         .container {
             width: 92%;
-            max-width: 1200px;
-            margin: 40px auto;
+            max-width: 1220px;
+            margin: 20px auto 50px auto;
+            flex: 1;
         }
-
-        .section-title {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .section-title h2 {
-            font-size: 28px;
-            color: #1e293b;
-            margin-bottom: 8px;
-        }
-
-        .section-title p {
-            color: #64748b;
-        }
-
-        /* =========================
-           GAME GRID
-        ========================= */
 
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
         }
 
-        /* =========================
-           GAME CARD
-        ========================= */
-
         .game-card {
-            background: white;
-            border-radius: 18px;
-            padding: 30px 20px;
+            background: #0b172d;
+            border-radius: 20px;
+            padding: 30px 24px;
             text-align: center;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
         }
 
         .game-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 15px 35px rgba(37,99,235,0.18);
+            border-color: rgba(255, 214, 10, 0.35);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .badge-status {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 999px;
+            text-transform: uppercase;
+        }
+
+        .status-live {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-soon {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
         .game-icon {
-            font-size: 55px;
+            font-size: 52px;
             margin-bottom: 15px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .game-card:hover .game-icon {
+            transform: scale(1.12);
         }
 
         .game-card h3 {
+            font-family: 'Outfit', sans-serif;
             font-size: 21px;
-            margin-bottom: 10px;
-            color: #1e293b;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #ffffff;
         }
 
         .game-card p {
-            font-size: 14px;
-            color: #64748b;
-            line-height: 1.5;
-            margin-bottom: 20px;
+            font-size: 13.5px;
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            flex: 1;
         }
 
         .play-btn {
             display: inline-block;
             text-decoration: none;
-            background: #2563eb;
             color: white;
-            padding: 11px 24px;
-            border-radius: 10px;
-            font-weight: bold;
-            transition: 0.3s;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 14px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+            border: none;
+            cursor: pointer;
+            width: 100%;
         }
 
         .play-btn:hover {
-            background: #1d4ed8;
+            transform: translateY(-2px);
+            opacity: 0.95;
+        }
+
+        /* Color Variations */
+        .battle .play-btn { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+        .maths .play-btn { background: linear-gradient(135deg, #059669, #047857); }
+        .science .play-btn { background: linear-gradient(135deg, #0284c7, #0369a1); }
+        .medical .play-btn { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+        .puzzle .play-btn { background: linear-gradient(135deg, #ea580c, #c2410c); }
+        .multiplayer .play-btn { background: linear-gradient(135deg, #db2777, #be185d); }
+
+        .btn-disabled {
+            background: #1e293b !important;
+            color: #64748b !important;
+            cursor: not-allowed;
+            box-shadow: none !important;
+            transform: none !important;
         }
 
         /* =========================
-           DIFFERENT CARD COLORS
+           5. FOOTER
         ========================= */
-
-        .quiz .play-btn {
-            background: #7c3aed;
-        }
-
-        .maths .play-btn {
-            background: #059669;
-        }
-
-        .science .play-btn {
-            background: #0284c7;
-        }
-
-        .medical .play-btn {
-            background: #dc2626;
-        }
-
-        .puzzle .play-btn {
-            background: #ea580c;
-        }
-
-        .multiplayer .play-btn {
-            background: #db2777;
-        }
-
-        /* =========================
-           FOOTER
-        ========================= */
-
         footer {
-            margin-top: 60px;
-            background: #0f172a;
-            color: #cbd5e1;
+            margin-top: auto;
+            background: #01060f;
+            border-top: 1px solid var(--border-subtle);
+            color: #64748b;
             text-align: center;
-            padding: 25px 15px;
-            font-size: 14px;
+            padding: 30px 20px;
+            font-size: 13.5px;
+            line-height: 1.8;
         }
 
-        /* =========================
-           MOBILE
-        ========================= */
+        footer b { color: #cbd5e1; }
 
-        @media (max-width: 600px) {
-
-            header {
-                padding: 35px 15px;
-            }
-
-            header h1 {
-                font-size: 29px;
-            }
-
-            header p {
-                font-size: 15px;
-            }
-
-            .container {
-                width: 90%;
-                margin: 30px auto;
-            }
-
-            .section-title h2 {
-                font-size: 24px;
-            }
-
-            .game-card {
-                padding: 25px 18px;
-            }
+        @media (max-width: 768px) {
+            .game-nav { flex-direction: column; gap: 12px; text-align: center; }
+            .hud-container { justify-content: center; text-align: center; }
+            header.hero-banner h1 { font-size: 30px; }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- =========================
-         HEADER
-    ========================= -->
+    <!-- ================= 1. UNIFIED TOP NAVIGATION ================= -->
+    <nav class="game-nav">
+        <a href="https://cbsesir.com" class="brand-link">
+            <span>📐 MD QUIZZES</span>
+            <span class="brand-tag">Game Arena</span>
+        </a>
 
-    <header>
-
-        <h1>🎮 MD Educational Games</h1>
-
-        <p>
-            Learn • Play • Challenge Yourself
-        </p>
-
-    </header>
-
-
-    <!-- =========================
-         MAIN CONTENT
-    ========================= -->
-
-    <main class="container">
-
-        <div class="section-title">
-
-            <h2>Choose Your Game</h2>
-
-            <p>
-                Select a game and start learning!
-            </p>
-
+        <div class="nav-right-actions">
+            <span class="user-status-text" id="gameUserStatus">👤 Checking session...</span>
+            <a href="https://cbsesir.com" class="btn-action btn-home">🏠 Main Blog</a>
+            <a href="https://quiz.cbsesir.com/login.html" class="btn-action btn-login" id="gameLoginBtn">🔑 Login</a>
+            <a href="https://quiz.cbsesir.com/profile.html" class="btn-action btn-profile" id="gameProfileBtn" style="display:none;">👤 Profile</a>
+            <button class="btn-action btn-logout" id="gameLogoutBtn" onclick="executeGameLogout()" style="display:none;" type="button">🚪 Logout</button>
         </div>
+    </nav>
 
-
-        <div class="games-grid">
-
-
-            <!-- =========================
-                 QUIZ GAME
-            ========================= -->
-
-            <div class="game-card">
-
-    <div class="game-icon">
-        ⚔️
+    <!-- ================= 2. LIVE GAMER HUD STRIP ================= -->
+    <div class="gamer-hud-bar">
+        <div class="hud-container">
+            <div style="color:#94a3b8;">
+                🎮 <b>Active Arcade:</b> Compete, beat live timers, and push your state rank!
+            </div>
+            <div class="hud-stats-group">
+                <div class="hud-item">
+                    <span>⭐ Score:</span>
+                    <b id="hudScoreVal" style="color:var(--gold);">0</b>
+                </div>
+                <div class="hud-item">
+                    <span>🏆 Rank:</span>
+                    <b id="hudRankVal" style="color:var(--cyan);">#--</b>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <h3>Battle Challenge</h3>
+    <!-- ================= 3. HERO BANNER ================= -->
+    <header class="hero-banner">
+        <h1>Choose Your <span>Challenge</span></h1>
+        <p>Master curriculum concepts through gamified challenges, rapid-fire speed games, and live high-score tracking.</p>
+    </header>
 
-    <p>
-        Guess the number by opponent
-    </p>
+    <!-- ================= 4. MAIN GAME GRID ================= -->
+    <main class="container">
+        <div class="games-grid">
 
-    <a href="battle.html" class="play-btn">
-        ▶ Play Game
-    </a>
+            <!-- 1. Battle Challenge -->
+            <div class="game-card battle">
+                <span class="badge-status status-live">Active</span>
+                <div>
+                    <div class="game-icon">⚔️</div>
+                    <h3>Battle Challenge</h3>
+                    <p>Play tactical guess challenges against automated opponents and sharpen mental deduction.</p>
+                </div>
+                <a href="battle.html" class="play-btn">▶ Play Battle</a>
+            </div>
 
-</div>
-
-            <!-- =========================
-                 MATHS GAME
-            ========================= -->
-
+            <!-- 2. Maths Roman Challenge -->
             <div class="game-card maths">
-
-                <div class="game-icon">
-                    🧮
+                <span class="badge-status status-live">Popular</span>
+                <div>
+                    <div class="game-icon">🧮</div>
+                    <h3>Maths Roman Match</h3>
+                    <p>Speed connect pairs of Roman numerals and Hindu-Arabic numbers against shrinking timers.</p>
                 </div>
-
-                <h3>Maths Challenge</h3>
-
-                <p>
-                    Connect a Pair of Roman & Hindu number
-                </p>
-
-                <a href="roman.html" class="play-btn">
-                    ▶ Play Maths
-                </a>
-
+                <a href="roman.html" class="play-btn">▶ Play Maths</a>
             </div>
 
-
-            <!-- =========================
-                 SCIENCE GAME
-            ========================= -->
-
+            <!-- 3. Science Challenge -->
             <div class="game-card science">
-
-                <div class="game-icon">
-                    🔬
+                <span class="badge-status status-soon">Coming Soon</span>
+                <div>
+                    <div class="game-icon">🔬</div>
+                    <h3>Science Arena</h3>
+                    <p>Interactive ray diagram simulations, balanced chemical equations, and biology organ puzzles.</p>
                 </div>
-
-                <h3>Science Challenge</h3>
-
-                <p>
-                    UNDER PROCESS
-                </p>
-
-                <a href="science.html" class="play-btn">
-                    ▶ Play Science
-                </a>
-
+                <button class="play-btn btn-disabled" disabled>Under Development</button>
             </div>
 
-
-            <!-- =========================
-                 MEDICAL GAME
-            ========================= -->
-
+            <!-- 4. Medical / NEET Games -->
             <div class="game-card medical">
-
-                <div class="game-icon">
-                    🩺
+                <span class="badge-status status-soon">Coming Soon</span>
+                <div>
+                    <div class="game-icon">🩺</div>
+                    <h3>NEET Medical Arena</h3>
+                    <p>Rapid botanical classification, human physiology nomenclature, and organic mechanism puzzles.</p>
                 </div>
-
-                <h3>Medical Games</h3>
-
-                <p>
-                   UNDER PROCESS
-                </p>
-
-                <a href="medical.html" class="play-btn">
-                    ▶ Play Medical
-                </a>
-
+                <button class="play-btn btn-disabled" disabled>Under Development</button>
             </div>
 
-
-            <!-- =========================
-                 PUZZLE GAME
-            ========================= -->
-
+            <!-- 5. Algebra Rapid Fire -->
             <div class="game-card puzzle">
-
-                <div class="game-icon">
-                    🧩
+                <span class="badge-status status-live">Live</span>
+                <div>
+                    <div class="game-icon">🧩</div>
+                    <h3>Algebra Rapid Fire</h3>
+                    <p>Solve quadratic, linear, and polynomial mental equations within strict countdown seconds.</p>
                 </div>
-
-                <h3> Algebra Rapid Fire </h3>
-
-                <p>
-                    Solve algebraic expression within time
-                </p>
-
-                <a href="class10.html" class="play-btn">
-                    ▶ Play Puzzle
-                </a>
-
+                <a href="class10.html" class="play-btn">▶ Play Rapid Fire</a>
             </div>
 
-
-            <!-- =========================
-                 MULTIPLAYER GAME
-            ========================= -->
-
+            <!-- 6. Multiplayer Arena -->
             <div class="game-card multiplayer">
-
-                <div class="game-icon">
-                    🏆
+                <span class="badge-status status-soon">In Progress</span>
+                <div>
+                    <div class="game-icon">🏆</div>
+                    <h3>Live Multiplayer</h3>
+                    <p>Direct 1-vs-1 real-time school classroom battles with automated live spectator boards.</p>
                 </div>
-
-                <h3>Multiplayer Games</h3>
-
-                <p>
-                    UNDER PROCESS
-                </p>
-
-                <a href="multiplayer.html" class="play-btn">
-                    ▶ Play Game
-                </a>
-
+                <button class="play-btn btn-disabled" disabled>Under Development</button>
             </div>
-
 
         </div>
-
     </main>
 
-
-    <!-- =========================
-         FOOTER
-    ========================= -->
-
+    <!-- ================= 5. FOOTER ================= -->
     <footer>
-
-        © 2026 MD Educational Games
-        <br>
-        Learn • Play • Improve
-
+        <p><b>MD Educational Games &amp; Quizzes Portal</b> &copy; 2026</p>
+        <p style="font-size:12.5px; margin-top:4px;">Unified Gaming &amp; Performance Sync Engine • Connected to cbsesir.com</p>
     </footer>
 
+    <!-- ================= 6. AUTH & HUD SCRIPT ================= -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0dDCPvN4L96ye0YuxippaIUHnEUwnT90",
+            authDomain: "mdquizzes-c255a.firebaseapp.com",
+            projectId: "mdquizzes-c255a",
+            storageBucket: "mdquizzes-c255a.firebasestorage.app",
+            messagingSenderId: "510171455812",
+            appId: "1:510171455812:web:dcead5207dc1272aa9b711"
+        };
 
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const userStatusEl = document.getElementById("gameUserStatus");
+        const loginBtn = document.getElementById("gameLoginBtn");
+        const profileBtn = document.getElementById("gameProfileBtn");
+        const logoutBtn = document.getElementById("gameLogoutBtn");
+        const hudScore = document.getElementById("hudScoreVal");
+        const hudRank = document.getElementById("hudRankVal");
+
+        function executeGameLogout() {
+            auth.signOut().then(() => {
+                window.location.href = "https://cbsesir.com";
+            });
+        }
+
+        // Realtime Auth & Profile Listener
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // Logged In: Show Profile & Logout, Hide Login
+                loginBtn.style.display = "none";
+                profileBtn.style.display = "inline-flex";
+                logoutBtn.style.display = "inline-flex";
+
+                // Live Sync with users collection
+                db.collection("users").doc(user.uid).onSnapshot(doc => {
+                    let name = "Student";
+                    let score = 0;
+
+                    if (doc.exists) {
+                        const d = doc.data();
+                        name = d.displayName || d.name || (d.firstName ? (d.firstName + " " + (d.lastName || "")).trim() : "");
+                        score = d.totalScore || d.points || 0;
+                    }
+
+                    if (!name || name === "Student") {
+                        name = user.displayName || (user.email ? user.email.split('@')[0] : "Player");
+                    }
+
+                    userStatusEl.innerHTML = 'Welcome, <b>' + name + '</b> 👋';
+                    hudScore.innerText = score;
+
+                    // Compute Rank
+                    db.collection("users").where("totalScore", ">", score).get().then(snap => {
+                        hudRank.innerText = "#" + (snap.size + 1);
+                    }).catch(() => {
+                        hudRank.innerText = "#1";
+                    });
+                });
+
+            } else {
+                // Logged Out / Guest Mode
+                userStatusEl.innerHTML = '👤 <span style="color:#94a3b8;">Guest Player</span>';
+                loginBtn.style.display = "inline-flex";
+                profileBtn.style.display = "none";
+                logoutBtn.style.display = "none";
+                hudScore.innerText = "0";
+                hudRank.innerText = "#--";
+            }
+        });
+    </script>
 </body>
 </html>
