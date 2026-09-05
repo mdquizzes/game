@@ -1,198 +1,909 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Algebra Rapid Fire</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algebra Rapid Fire - MD Educational Games</title>
 
-<style>
-body { font-family: Arial; text-align: center; margin: 0; background: #f5f5f5; }
-.container { padding: 20px; }
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-h1 { color: #333; }
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-#question { font-size: 28px; margin: 20px; }
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        :root {
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --primary-blue: #0b4bc1;
+            --accent-blue: #155eef;
+            --soft-blue: #eff6ff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-light: #e2e8f0;
+            --gold: #d97706;
+            --green: #16a34a;
+            --green-light: #dcfce7;
+            --red: #dc2626;
+            --red-light: #fee2e2;
+            --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.06);
+        }
 
-.option {
-    display: block;
-    margin: 10px auto;
-    padding: 12px;
-    width: 200px;
-    font-size: 18px;
-    cursor: pointer;
-    border-radius: 8px;
-}
+        body {
+            background: var(--bg-main);
+            min-height: 100vh;
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
 
-.correct { background: #4CAF50; color: white; }
-.wrong { background: #f44336; color: white; }
+        /* 1. TOP NAVBAR */
+        .game-nav {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-light);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        }
 
-#timer { font-size: 22px; color: red; }
-#score { font-size: 20px; color: green; }
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--primary-blue);
+            font-family: 'Outfit', sans-serif;
+            font-size: 20px;
+            font-weight: 900;
+        }
 
-table { margin: auto; border-collapse: collapse; }
-td, th { border: 1px solid #ccc; padding: 8px; }
-</style>
+        .brand-tag {
+            background: var(--soft-blue);
+            border: 1px solid #bfdbfe;
+            color: var(--accent-blue);
+            font-size: 11px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
 
+        .nav-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .user-status-text { font-size: 13.5px; font-weight: 700; color: var(--text-dark); }
+        .user-status-text b { color: var(--primary-blue); }
+
+        .btn-action {
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 800;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-game-dash { background: var(--green-light); color: var(--green); border: 1px solid #bbf7d0; }
+        .btn-game-dash:hover { background: #bbf7d0; transform: translateY(-1px); }
+
+        .btn-quiz-dash { background: var(--soft-blue); color: var(--accent-blue); border: 1px solid #bfdbfe; }
+        .btn-quiz-dash:hover { background: #dbeafe; transform: translateY(-1px); }
+
+        .btn-login { background: var(--accent-blue); color: #fff; }
+        .btn-profile { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+        .btn-logout { background: var(--red-light); color: var(--red); border: 1px solid #fecaca; }
+        .btn-logout:hover { background: #fca5a5; }
+
+        /* 2. MAIN LAYOUT */
+        .arena-wrapper {
+            max-width: 1400px;
+            margin: 18px auto 35px auto;
+            padding: 0 16px;
+            display: grid;
+            grid-template-columns: 2.1fr 0.9fr;
+            gap: 22px;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* 3. GAME PANEL & ARENA */
+        .game-panel {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            width: 100%;
+        }
+
+        .hud-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 12px 18px;
+            border-radius: 14px;
+            border: 1px solid var(--border-light);
+            margin-bottom: 16px;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .hud-stats b { font-family: 'Outfit', sans-serif; font-size: 19px; }
+
+        .level-indicator {
+            background: var(--soft-blue);
+            color: var(--primary-blue);
+            padding: 4px 12px;
+            border-radius: 8px;
+            border: 1px solid #bfdbfe;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .combo-badge {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            padding: 3px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 900;
+            color: #fff;
+            display: none;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+            animation: pulseCombo 0.35s infinite alternate;
+        }
+
+        @keyframes pulseCombo {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        /* RAPID STAGE */
+        .stage-box {
+            position: relative;
+            background: radial-gradient(circle at 50% 120%, #eff6ff 0%, #f8fafc 100%);
+            border: 2px dashed #bfdbfe;
+            border-radius: 18px;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            margin-bottom: 14px;
+            overflow: hidden;
+        }
+
+        .stage-box.shake-error {
+            animation: stageShake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+            border-color: var(--red);
+        }
+
+        @keyframes stageShake {
+            10%, 90% { transform: translate3d(-3px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-5px, 0, 0); }
+            40%, 60% { transform: translate3d(5px, 0, 0); }
+        }
+
+        .equation-badge {
+            background: var(--soft-blue);
+            border: 1px solid #bfdbfe;
+            color: var(--accent-blue);
+            font-size: 13px;
+            font-weight: 800;
+            padding: 4px 14px;
+            border-radius: 999px;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+        }
+
+        .equation-display {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(34px, 5.5vw, 56px);
+            font-weight: 900;
+            color: var(--primary-blue);
+            letter-spacing: 1px;
+            margin-bottom: 26px;
+            text-align: center;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .opt-btn {
+            background: #ffffff;
+            border: 2px solid var(--border-light);
+            border-radius: 14px;
+            padding: 16px 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-dark);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+            transition: all 0.15s ease;
+        }
+
+        .opt-btn:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-blue);
+            background: var(--soft-blue);
+            color: var(--primary-blue);
+        }
+
+        .opt-btn.correct {
+            background: var(--green-light) !important;
+            border-color: var(--green) !important;
+            color: var(--green) !important;
+            transform: scale(1.04);
+        }
+
+        .opt-btn.wrong {
+            background: var(--red-light) !important;
+            border-color: var(--red) !important;
+            color: var(--red) !important;
+            transform: scale(0.96);
+        }
+
+        /* OVERLAYS & CONTROLS */
+        .stage-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .level-selector-box {
+            display: flex;
+            gap: 12px;
+            margin: 14px 0 20px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .level-btn {
+            background: #ffffff;
+            border: 2px solid var(--border-light);
+            padding: 11px 20px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+        }
+
+        .level-btn:hover { border-color: #bfdbfe; background: var(--soft-blue); }
+        .level-btn.active {
+            border-color: var(--primary-blue);
+            background: var(--soft-blue);
+            color: var(--primary-blue);
+            box-shadow: 0 4px 12px rgba(11, 75, 193, 0.15);
+        }
+
+        .name-input {
+            width: 100%;
+            max-width: 320px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 2px solid var(--border-light);
+            font-size: 15px;
+            font-weight: 600;
+            outline: none;
+            margin-bottom: 14px;
+            text-align: center;
+            color: var(--text-dark);
+        }
+        .name-input:focus { border-color: var(--primary-blue); }
+
+        .btn-play-action {
+            background: var(--primary-blue);
+            color: #ffffff;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(11, 75, 193, 0.3);
+            transition: all 0.2s ease;
+        }
+        .btn-play-action:hover { background: var(--accent-blue); transform: translateY(-2px); }
+
+        /* Floating Score Text */
+        .floating-pts {
+            position: absolute;
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 900;
+            pointer-events: none;
+            animation: floatUp 0.75s ease-out forwards;
+            z-index: 40;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1.3); }
+        }
+
+        /* 4. LEADERBOARD PANEL (ISOLATED) */
+        .leaderboard-panel {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 22px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .leader-header {
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 16px;
+        }
+        .leader-header h2 { font-family: 'Outfit', sans-serif; font-size: 20px; color: var(--primary-blue); font-weight: 900; }
+
+        .personal-card {
+            background: var(--soft-blue);
+            border: 1px solid #bfdbfe;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        .lead-item {
+            background: #ffffff;
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            border: 1px solid var(--border-light);
+            transition: transform 0.15s ease;
+        }
+        .lead-item:hover { transform: translateX(3px); border-color: #cbd5e1; }
+
+        /* MOBILE RESPONSIVE (LEADERBOARD BOTTOM) */
+        @media(max-width: 920px) {
+            .arena-wrapper { 
+                grid-template-columns: 1fr; 
+                margin: 10px auto 25px auto;
+                padding: 0 10px;
+                gap: 18px;
+            }
+            .game-panel { padding: 16px 14px; }
+            .stage-box { min-height: 420px; padding: 18px 12px; }
+            .equation-display { font-size: 38px; margin-bottom: 20px; }
+            .options-grid { max-width: 100%; }
+            .opt-btn { padding: 12px; font-size: 20px; }
+            .game-nav { flex-direction: column; gap: 10px; padding: 12px 16px; }
+            .level-selector-box { flex-direction: column; width: 100%; max-width: 260px; }
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="container">
+    <!-- 1. TOP NAVBAR -->
+    <nav class="game-nav">
+        <a href="https://game.cbsesir.com" class="brand-link">
+            <span>📐 MD QUIZZES</span>
+            <span class="brand-tag">Algebra Fire</span>
+        </a>
 
-<h1>🎯 Algebra Rapid Fire</h1>
+        <div class="nav-right-actions">
+            <span class="user-status-text" id="gameUserStatus">👤 Checking...</span>
+            
+            <a href="https://game.cbsesir.com" class="btn-action btn-game-dash">🎮 Game Arena</a>
+            <a href="https://cbsesir.com" class="btn-action btn-quiz-dash">📊 Main Dashboard</a>
 
-<div id="startScreen">
-    <input type="text" id="name" placeholder="Student Name"><br><br>
-    <button onclick="startGame()">Start Game</button>
-</div>
+            <a href="https://quiz.cbsesir.com/login.html" class="btn-action btn-login" id="gameLoginBtn">🔑 Login</a>
+            <a href="https://quiz.cbsesir.com/profile.html" class="btn-action btn-profile" id="gameProfileBtn" style="display:none;">👤 Profile</a>
+            <button class="btn-action btn-logout" id="gameLogoutBtn" onclick="gameLogout()" style="display:none;" type="button">🚪 Logout</button>
+        </div>
+    </nav>
 
-<div id="gameScreen" style="display:none;">
-    ⏳ Time: <span id="timer">60</span> sec |
-    ⭐ Score: <span id="score">0</span>
+    <!-- 2. GAME ARENA -->
+    <main class="arena-wrapper">
 
-```
-<div id="question"></div>
+        <!-- PRIMARY GAME PANEL -->
+        <div class="game-panel">
+            <div class="hud-stats">
+                <div>⏱ Timer: <b id="timerVal" style="color:var(--accent-blue);">60s</b></div>
+                <div><span class="level-indicator" id="levelDisplay">EASY (x = 1–10)</span></div>
+                <div>💥 Solved: <b id="solvedVal" style="color:var(--green);">0</b></div>
+                <div id="comboBadge" class="combo-badge">🔥 2X STREAK</div>
+                <div>⭐ Points: <b id="scoreVal" style="color:var(--gold);">0</b></div>
+            </div>
 
-<div id="options"></div>
-```
+            <!-- PLAY STAGE -->
+            <div class="stage-box" id="stageBox">
 
-</div>
+                <div class="equation-badge">Solve for x</div>
+                <div class="equation-display" id="equationText">2x + 4 = 12</div>
 
-<div id="resultScreen" style="display:none;">
-    <h2 id="result"></h2>
-    <button onclick="restart()">Play Again</button>
-</div>
+                <div class="options-grid" id="optionsBox">
+                    <!-- Dynamic Buttons -->
+                </div>
 
-<h3>🏆 Leaderboard</h3>
-<table>
-<tr><th>Name</th><th>Score</th></tr>
-<tbody id="board"></tbody>
-</table>
+                <!-- OVERLAY: START SCREEN -->
+                <div class="stage-overlay" id="startOverlay">
+                    <div style="font-size: 50px; margin-bottom: 8px;">🎯</div>
+                    <h2 style="font-family:'Outfit', sans-serif; font-size: 28px; color:var(--primary-blue); font-weight:900; margin-bottom: 6px;">Algebra Rapid Fire</h2>
+                    <p style="font-size: 14px; color:var(--text-muted); max-width: 440px; margin-bottom: 14px; line-height: 1.6;">
+                        Calculate linear equations at rapid speed! Correct gives <b>+5 pts</b>, wrong deducts <b>-2 pts</b>. Streak combos amplify scores!
+                    </p>
 
-</div>
+                    <input type="text" id="playerNameInput" class="name-input" placeholder="Enter student name">
 
-<script>
+                    <div style="font-size: 12px; font-weight: 800; color:var(--text-dark); text-transform: uppercase; margin-bottom: 6px;">Difficulty Tier:</div>
+                    <div class="level-selector-box">
+                        <button class="level-btn active" id="btnEasy" onclick="selectLevel('easy')">🌱 Easy (1–10)</button>
+                        <button class="level-btn" id="btnMed" onclick="selectLevel('medium')">⚡ Medium (1–25)</button>
+                        <button class="level-btn" id="btnHard" onclick="selectLevel('hard')">🔥 Hard (1–50)</button>
+                    </div>
 
-let score = 0;
-let timeLeft = 60;
-let timer;
-let correctAnswer;
-let scores = JSON.parse(localStorage.getItem("algScores")) || [];
+                    <button class="btn-play-action" onclick="startGame()">▶ Start Rapid Fire</button>
+                </div>
 
-let correctSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
-let wrongSound = new Audio("https://www.soundjay.com/buttons/sounds/button-10.mp3");
+                <!-- OVERLAY: RESULT SCREEN -->
+                <div class="stage-overlay" id="resultOverlay" style="display:none;">
+                    <div style="font-size: 48px; margin-bottom: 6px;">🏆</div>
+                    <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--primary-blue); font-weight:900;">Time's Up!</h2>
+                    <p style="font-size: 15px; color:var(--text-dark); margin: 6px 0 16px 0; font-weight:600;" id="resultSummaryText">
+                        Great sprint! You scored +0 points.
+                    </p>
+                    <button class="btn-play-action" onclick="restartToStart()">🔄 Play Again</button>
+                </div>
 
-function generateQuestion(){
-    let a = Math.floor(Math.random()*10)+1;
-    let x = Math.floor(Math.random()*10)+1;
-    let b = Math.floor(Math.random()*10)+1;
+            </div>
 
-    let c = a*x + b;
+            <div style="font-size: 13px; color: var(--text-muted); text-align: center; font-weight: 600;">
+                Points belong exclusively to the <b>Game Arena</b> and never inflate your academic Quiz syllabus ranking.
+            </div>
+        </div>
 
-    correctAnswer = x;
+        <!-- REALTIME LEADERBOARD -->
+        <div class="leaderboard-panel">
+            <div class="leader-header">
+                <h2>🏆 Algebra Champions</h2>
+                <span style="font-size: 12.5px; color: var(--text-muted);">Realtime Game Records</span>
+            </div>
 
-    document.getElementById("question").innerText =
-        `${a}x + ${b} = ${c}`;
+            <div class="personal-card">
+                <div style="font-size: 12px; color: var(--accent-blue); font-weight: 800; letter-spacing: 0.5px;">YOUR BEST ALGEBRA SCORE</div>
+                <div style="font-size: 28px; font-weight: 900; color: var(--primary-blue); margin-top: 4px; font-family:'Outfit', sans-serif;" id="userBestAlgebra">0 pts</div>
+            </div>
 
-    let options = [x];
+            <div id="algebraChampionsList">
+                <div style="text-align: center; color: var(--text-muted); padding: 20px;">Loading champions...</div>
+            </div>
+        </div>
 
-    while(options.length < 4){
-        let wrong = Math.floor(Math.random()*15);
-        if(!options.includes(wrong)) options.push(wrong);
-    }
+    </main>
 
-    options.sort(()=>Math.random()-0.5);
-
-    let box = document.getElementById("options");
-    box.innerHTML = "";
-
-    options.forEach(opt=>{
-        let btn = document.createElement("button");
-        btn.innerText = opt;
-        btn.className = "option";
-
-        btn.onclick = ()=>{
-            if(opt === correctAnswer){
-                score += 5;
-                correctSound.play();
-                btn.classList.add("correct");
-            } else {
-                score -= 2;
-                wrongSound.play();
-                btn.classList.add("wrong");
+    <!-- 3. SYNTHESIZED SOUND EFFECTS ENGINE -->
+    <script>
+        const AudioFX = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            },
+            playCorrect() {
+                this.init();
+                const now = this.ctx.currentTime;
+                [523.25, 659.25, 783.99].forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.16);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.05);
+                    osc.stop(now + idx * 0.05 + 0.16);
+                });
+            },
+            playWrong() {
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, this.ctx.currentTime + 0.22);
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.22);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.22);
             }
+        };
+    </script>
 
-            document.getElementById("score").innerText = score;
-
-            setTimeout(generateQuestion, 500);
+    <!-- 4. FIREBASE & GAME ENGINE (ISOLATED FROM QUIZ SCORE) -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCODdCPvN4L96ye0YuxippaIUHnEUwnT90",
+            authDomain: "mdquizzes-c255a.firebaseapp.com",
+            projectId: "mdquizzes-c255a",
+            storageBucket: "mdquizzes-c255a.firebasestorage.app",
+            messagingSenderId: "510171455812",
+            appId: "1:510171455812:web:dcead5207dc1272aa9b711"
         };
 
-        box.appendChild(btn);
-    });
-}
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-function startGame(){
-    let name = document.getElementById("name").value;
-    if(!name){ alert("Enter name"); return; }
+        const userStatusEl = document.getElementById("gameUserStatus");
+        const loginBtn = document.getElementById("gameLoginBtn");
+        const profileBtn = document.getElementById("gameProfileBtn");
+        const logoutBtn = document.getElementById("gameLogoutBtn");
+        const userBestDisplay = document.getElementById("userBestAlgebra");
+        const playerNameInput = document.getElementById("playerNameInput");
 
-    score = 0;
-    timeLeft = 60;
-
-    document.getElementById("startScreen").style.display="none";
-    document.getElementById("gameScreen").style.display="block";
-
-    generateQuestion();
-
-    timer = setInterval(()=>{
-        timeLeft--;
-        document.getElementById("timer").innerText = timeLeft;
-
-        if(timeLeft <= 0){
-            clearInterval(timer);
-            finishGame();
+        function readSharedCookie() {
+            const match = document.cookie.match(new RegExp('(^| )cbsesir_user=([^;]+)'));
+            if (match) {
+                try { return JSON.parse(decodeURIComponent(match[2])); } catch (e) { return null; }
+            }
+            return null;
         }
-    },1000);
-}
 
-function finishGame(){
-    let name = document.getElementById("name").value;
+        window.gameLogout = function() {
+            document.cookie = "cbsesir_user=; domain=.cbsesir.com; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+            auth.signOut().then(() => {
+                window.location.href = "https://cbsesir.com";
+            });
+        };
 
-    scores.push({name, score});
-    localStorage.setItem("algScores", JSON.stringify(scores));
+        function setLoggedInState(uid, name) {
+            if (loginBtn) loginBtn.style.display = "none";
+            if (profileBtn) profileBtn.style.display = "inline-flex";
+            if (logoutBtn) logoutBtn.style.display = "inline-flex";
+            if (userStatusEl) userStatusEl.innerHTML = 'Welcome, <b>' + name + '</b> 👋';
+            if (playerNameInput && !playerNameInput.value) playerNameInput.value = name;
 
-    updateBoard();
+            if (uid) {
+                db.collection("gameProfiles").doc(uid).onSnapshot(doc => {
+                    if (doc.exists) {
+                        const best = doc.data().algebraScore || 0;
+                        userBestDisplay.innerText = best + " pts";
+                    }
+                });
+            }
+        }
 
-    document.getElementById("gameScreen").style.display="none";
-    document.getElementById("resultScreen").style.display="block";
+        function setGuestState() {
+            if (userStatusEl) userStatusEl.innerHTML = '👤 <span style="color:var(--text-muted);">Guest Player</span>';
+            if (loginBtn) loginBtn.style.display = "inline-flex";
+            if (profileBtn) profileBtn.style.display = "none";
+            if (logoutBtn) logoutBtn.style.display = "none";
+        }
 
-    document.getElementById("result").innerText =
-        `${name}, Your Score: ${score}`;
-}
+        // Realtime Champions Leaderboard (Ordered by algebraScore exclusively)
+        db.collection("gameProfiles").orderBy("algebraScore", "desc").limit(6).onSnapshot(snap => {
+            const listEl = document.getElementById("algebraChampionsList");
+            if (snap.empty) {
+                loadLocalScoresFallback();
+                return;
+            }
+            let html = "";
+            let r = 1;
+            snap.forEach(d => {
+                const u = d.data();
+                const name = u.name || "Player";
+                const score = u.algebraScore || 0;
+                let badge = r === 1 ? "🥇 " : r === 2 ? "🥈 " : r === 3 ? "🥉 " : `#${r} `;
+                html += `
+                    <div class="lead-item">
+                        <span><b>${badge}</b> ${name}</span>
+                        <b style="color:var(--primary-blue); font-family:'Outfit', sans-serif;">${score} pts</b>
+                    </div>`;
+                r++;
+            });
+            listEl.innerHTML = html;
+        }, err => {
+            console.warn("Firestore access offline/denied. Using LocalStorage fallback:", err);
+            loadLocalScoresFallback();
+        });
 
-function updateBoard(){
-    let board = document.getElementById("board");
+        function loadLocalScoresFallback() {
+            const listEl = document.getElementById("algebraChampionsList");
+            let local = JSON.parse(localStorage.getItem("algScores")) || [];
+            if (!local.length) {
+                listEl.innerHTML = "<div style='text-align:center; color:var(--text-muted); padding:15px;'>No champion records yet!</div>";
+                return;
+            }
+            local.sort((a,b) => b.score - a.score);
+            let html = "";
+            local.slice(0, 6).forEach((item, idx) => {
+                let badge = idx === 0 ? "🥇 " : idx === 1 ? "🥈 " : idx === 2 ? "🥉 " : `#${idx+1} `;
+                html += `
+                    <div class="lead-item">
+                        <span><b>${badge}</b> ${item.name}</span>
+                        <b style="color:var(--primary-blue); font-family:'Outfit', sans-serif;">${item.score} pts</b>
+                    </div>`;
+            });
+            listEl.innerHTML = html;
+        }
 
-    scores.sort((a,b)=>b.score-a.score);
+        const session = readSharedCookie();
+        if (session && session.loggedIn) {
+            setLoggedInState(session.uid, session.name);
+        }
 
-    board.innerHTML = "";
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                db.collection("users").doc(user.uid).get().then(doc => {
+                    let name = user.displayName || user.email.split('@')[0];
+                    if (doc.exists) {
+                        const d = doc.data();
+                        name = d.displayName || d.name || name;
+                    }
+                    setLoggedInState(user.uid, name);
+                });
+            } else if (!session || !session.loggedIn) {
+                setGuestState();
+            }
+        });
 
-    scores.forEach(s=>{
-        board.innerHTML += `
-        <tr>
-            <td>${s.name}</td>
-            <td>${s.score}</td>
-        </tr>`;
-    });
-}
+        /* ==========================================================
+           GAME ENGINE WITH ISOLATED SCORING & DIFFICULTY TIERS
+           ========================================================== */
+        let score = 0;
+        let timeLeft = 60;
+        let timer = null;
+        let correctAnswer = 0;
+        let solvedCount = 0;
+        let streak = 0;
+        let selectedLevel = 'easy';
+        let isGameRunning = false;
 
-function restart(){
-    document.getElementById("startScreen").style.display="block";
-    document.getElementById("resultScreen").style.display="none";
-}
+        function selectLevel(lvl) {
+            selectedLevel = lvl;
+            document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+            if (lvl === 'easy') {
+                document.getElementById('btnEasy').classList.add('active');
+                document.getElementById('levelDisplay').innerText = "EASY (x = 1–10)";
+            } else if (lvl === 'medium') {
+                document.getElementById('btnMed').classList.add('active');
+                document.getElementById('levelDisplay').innerText = "MEDIUM (x = 1–25)";
+            } else {
+                document.getElementById('btnHard').classList.add('active');
+                document.getElementById('levelDisplay').innerText = "HARD (x = 1–50)";
+            }
+        }
 
-updateBoard();
+        function generateQuestion() {
+            if (!isGameRunning) return;
 
-</script>
+            let maxMultiplier = 9;
+            let maxX = 10;
+            let maxB = 15;
 
+            if (selectedLevel === 'medium') {
+                maxMultiplier = 14;
+                maxX = 25;
+                maxB = 30;
+            } else if (selectedLevel === 'hard') {
+                maxMultiplier = 19;
+                maxX = 50;
+                maxB = 50;
+            }
+
+            let a = Math.floor(Math.random() * maxMultiplier) + 2;
+            let x = Math.floor(Math.random() * maxX) + 1;
+            let b = Math.floor(Math.random() * maxB) + 1;
+            let c = a * x + b;
+
+            correctAnswer = x;
+            document.getElementById("equationText").innerText = `${a}x + ${b} = ${c}`;
+
+            let options = [x];
+            while (options.length < 4) {
+                let delta = (Math.floor(Math.random() * 7) + 1) * (Math.random() > 0.5 ? 1 : -1);
+                let wrong = Math.max(1, x + delta);
+                if (!options.includes(wrong)) options.push(wrong);
+            }
+
+            options.sort(() => Math.random() - 0.5);
+
+            const box = document.getElementById("optionsBox");
+            box.innerHTML = "";
+
+            options.forEach(opt => {
+                const btn = document.createElement("button");
+                btn.className = "opt-btn";
+                btn.innerText = opt;
+                btn.onclick = (e) => handleAnswer(opt, btn, e);
+                box.appendChild(btn);
+            });
+        }
+
+        function showFloatingPoint(text, color, x, y) {
+            const el = document.createElement("div");
+            el.className = "floating-pts";
+            el.innerText = text;
+            el.style.color = color;
+            el.style.left = x + "px";
+            el.style.top = y + "px";
+            document.getElementById("stageBox").appendChild(el);
+            setTimeout(() => el.remove(), 750);
+        }
+
+        function handleAnswer(choice, btn, event) {
+            if (!isGameRunning) return;
+
+            const rect = btn.getBoundingClientRect();
+            const stageRect = document.getElementById("stageBox").getBoundingClientRect();
+            const clickX = rect.left - stageRect.left + rect.width / 2 - 15;
+            const clickY = rect.top - stageRect.top - 10;
+
+            if (choice === correctAnswer) {
+                AudioFX.playCorrect();
+                btn.classList.add("correct");
+                solvedCount++;
+                streak++;
+
+                let multiplier = streak >= 5 ? 3 : (streak >= 3 ? 2 : 1);
+                if (multiplier > 1) {
+                    document.getElementById("comboBadge").style.display = "inline-block";
+                    document.getElementById("comboBadge").innerText = `🔥 ${multiplier}X STREAK`;
+                }
+
+                let gain = 5 * multiplier;
+                score += gain;
+                showFloatingPoint(`+${gain}`, '#16a34a', clickX, clickY);
+
+            } else {
+                AudioFX.playWrong();
+                btn.classList.add("wrong");
+                streak = 0;
+                document.getElementById("comboBadge").style.display = "none";
+                score = Math.max(0, score - 2);
+
+                document.getElementById("stageBox").classList.add("shake-error");
+                setTimeout(() => document.getElementById("stageBox").classList.remove("shake-error"), 350);
+                showFloatingPoint(`-2`, '#dc2626', clickX, clickY);
+            }
+
+            document.getElementById("scoreVal").innerText = score;
+            document.getElementById("solvedVal").innerText = solvedCount;
+
+            setTimeout(generateQuestion, 380);
+        }
+
+        function startGame() {
+            let name = playerNameInput.value.trim();
+            if (!name) {
+                alert("Please enter your name to start!");
+                playerNameInput.focus();
+                return;
+            }
+
+            score = 0;
+            timeLeft = 60;
+            solvedCount = 0;
+            streak = 0;
+            isGameRunning = true;
+
+            document.getElementById("startOverlay").style.display = "none";
+            document.getElementById("resultOverlay").style.display = "none";
+            document.getElementById("comboBadge").style.display = "none";
+
+            document.getElementById("scoreVal").innerText = "0";
+            document.getElementById("solvedVal").innerText = "0";
+            document.getElementById("timerVal").innerText = timeLeft + "s";
+
+            generateQuestion();
+
+            clearInterval(timer);
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timerVal").innerText = timeLeft + "s";
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    finishGame();
+                }
+            }, 1000);
+        }
+
+        async function finishGame() {
+            isGameRunning = false;
+            clearInterval(timer);
+
+            let name = playerNameInput.value.trim() || "Student";
+
+            // Local scores archive
+            let scores = JSON.parse(localStorage.getItem("algScores")) || [];
+            scores.push({ name, score, date: new Date().toLocaleDateString() });
+            localStorage.setItem("algScores", JSON.stringify(scores));
+            loadLocalScoresFallback();
+
+            document.getElementById("resultSummaryText").innerHTML = `
+                Well done, <b>${name}</b>! You solved <b>${solvedCount} equations</b> and racked up <b style="color:var(--primary-blue); font-size:22px;">+${score} pts</b>.
+            `;
+            document.getElementById("resultOverlay").style.display = "flex";
+
+            if (score <= 0) return;
+
+            // ISOLATED FIRESTORE SYNC (Only Game Profile, strictly NO sync to users totalScore)
+            const cookieData = readSharedCookie();
+            const currentUid = (auth.currentUser && auth.currentUser.uid) || (cookieData ? cookieData.uid : null);
+
+            if (currentUid) {
+                try {
+                    await db.collection("gameProfiles").doc(currentUid).set({
+                        uid: currentUid,
+                        name: name,
+                        algebraScore: firebase.firestore.FieldValue.increment(score),
+                        totalGameScore: firebase.firestore.FieldValue.increment(score),
+                        lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+
+                    const currentBest = parseInt(userBestDisplay.innerText) || 0;
+                    userBestDisplay.innerText = (currentBest + score) + " pts";
+                } catch (e) {
+                    console.error("Game score sync error:", e);
+                }
+            }
+        }
+
+        function restartToStart() {
+            document.getElementById("resultOverlay").style.display = "none";
+            document.getElementById("startOverlay").style.display = "flex";
+        }
+    </script>
 </body>
 </html>
