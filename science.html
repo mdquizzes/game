@@ -697,20 +697,52 @@
             }, 1000);
         }
 
-        /* ==========================================================
-           TRIPLE FIRESTORE SCORE SYNC
-           ========================================================== */
-        async function endFusionLab() {
-            isLabActive = false;
-            clearInterval(timerInterval);
+       /* ==========================================================
+   SCIENCE SCORE SYNC (GAMES ONLY - NO QUIZ ADDITION)
+   ========================================================== */
+async function endFusionLab() {
+    isLabActive = false;
+    clearInterval(timerInterval);
 
-            overlay.style.display = "flex";
-            overlay.innerHTML = `
-                <div style="font-size: 44px; margin-bottom: 6px;">⚗️</div>
-                <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--cyan);">Synthesis Complete!</h2>
-                <p style="font-size: 15px; color:#fff; margin: 8px 0 16px 0;">
-                    You earned <b style="color:var(--cyan); font-size:24px;">+${labScore}</b> Science Points!
-                </p>
+    overlay.style.display = "flex";
+    overlay.innerHTML = `
+        <div style="font-size: 44px; margin-bottom: 6px;">⚗️</div>
+        <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--cyan);">Synthesis Complete!</h2>
+        <p style="font-size: 15px; color:#fff; margin: 8px 0 16px 0;">
+            You earned <b style="color:var(--cyan); font-size:24px;">+${labScore}</b> Science Points!
+        </p>
+        <button class="btn-play-trigger" onclick="startFusionLab()">🔄 Synthesize Again</button>
+    `;
+
+    if (labScore <= 0) return;
+
+    const cookieData = readSharedCookie();
+    const currentUid = (auth.currentUser && auth.currentUser.uid) || (cookieData ? cookieData.uid : null);
+    const studentName = (auth.currentUser && auth.currentUser.displayName) || (cookieData ? cookieData.name : "Scientist");
+
+    if (!currentUid) {
+        alert(`Experiment complete! Scored ${labScore} points. Please login to rank on the Game Leaderboard!`);
+        return;
+    }
+
+    try {
+        // ONLY Updates Game Profile
+        await db.collection("gameProfiles").doc(currentUid).set({
+            uid: currentUid,
+            name: studentName,
+            scienceScore: firebase.firestore.FieldValue.increment(labScore),
+            totalGameScore: firebase.firestore.FieldValue.increment(labScore),
+            lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        const cur = parseInt(userBestDisplay.innerText) || 0;
+        userBestDisplay.innerText = `${cur + labScore} pts`;
+
+        console.log("Science points saved strictly to Game Arena!");
+    } catch (err) {
+        console.error("Firestore sync error:", err);
+    }
+}                </p>
                 <button class="btn-play-trigger" onclick="startFusionLab()">🔄 Synthesize Again</button>
             `;
 
