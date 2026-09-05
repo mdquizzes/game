@@ -18,10 +18,7 @@
         :root {
             --gold: #ffd60a;
             --cyan: #38bdf8;
-            --green: #10b981;// Is block ko remove/comment kar dene se game points main quiz me add nahi honge:
-await db.collection("users").doc(currentUid).set({
-    totalScore: firebase.firestore.FieldValue.increment(gameScore)
-}, { merge: true });
+            --green: #10b981;
             --red: #ef4444;
             --border-subtle: rgba(255, 255, 255, 0.1);
             --border-gold: rgba(255, 214, 10, 0.35);
@@ -161,7 +158,6 @@ await db.collection("users").doc(currentUid).set({
             to { transform: scale(1.1); }
         }
 
-        /* Interactive Canvas Arena */
         .bubble-stage {
             position: relative;
             background: radial-gradient(circle at bottom, #07152e, #020713);
@@ -184,7 +180,6 @@ await db.collection("users").doc(currentUid).set({
             40%, 60% { transform: translate3d(5px, 0, 0); }
         }
 
-        /* High-Definition Bubble Elements */
         .bubble {
             position: absolute;
             width: 72px;
@@ -206,7 +201,6 @@ await db.collection("users").doc(currentUid).set({
         .bubble.roman { background: radial-gradient(circle at 30% 30%, #38bdf8, #0369a1); }
         .bubble.hindu { background: radial-gradient(circle at 30% 30%, #f59e0b, #b45309); }
         
-        /* Tricky Decoy Bubble styling */
         .bubble.decoy {
             background: radial-gradient(circle at 30% 30%, #ec4899, #9d174d);
             border-color: rgba(244, 114, 182, 0.4);
@@ -410,12 +404,15 @@ await db.collection("users").doc(currentUid).set({
             if (logoutBtn) logoutBtn.style.display = "inline-flex";
             if (userStatusEl) userStatusEl.innerHTML = 'Welcome, <b style="color:#ffd60a;">' + name + '</b> 👋';
 
-            db.collection("gameProfiles").doc(uid).onSnapshot(doc => {
-                if (doc.exists) {
-                    const best = doc.data().romanScore || 0;
-                    userBestDisplay.innerText = best + " pts";
-                }
-            });
+            // Realtime user best score in Roman
+            if (uid) {
+                db.collection("gameProfiles").doc(uid).onSnapshot(doc => {
+                    if (doc.exists) {
+                        const best = doc.data().romanScore || 0;
+                        userBestDisplay.innerText = best + " pts";
+                    }
+                });
+            }
         }
 
         function setGuestState() {
@@ -470,7 +467,7 @@ await db.collection("users").doc(currentUid).set({
         });
 
         /* ==========================================================
-           ADVANCED GAMEPLAY WITH DECOY BUBBLES & STREAKS
+           GAMEPLAY ENGINE (BUBBLE MATCHING & COMBO)
            ========================================================== */
         const PAIRS_DATA = [
             { num: 1, rom: "I" }, { num: 4, rom: "IV" }, { num: 5, rom: "V" },
@@ -480,7 +477,6 @@ await db.collection("users").doc(currentUid).set({
             { num: 100, rom: "C" }, { num: 500, rom: "D" }, { num: 1000, rom: "M" }
         ];
 
-        // Random Decoys with no pairs to test focus
         const DECOY_SYMBOLS = ["XII", "XXV", "LIV", "37", "88", "LX", "99", "CX"];
 
         let gameTimer = 45;
@@ -512,12 +508,13 @@ await db.collection("users").doc(currentUid).set({
             document.getElementById("matchVal").innerText = matchesCount;
             comboEl.style.display = "none";
 
-            // Spawn first wave
+            // First wave
             spawnPair();
             spawnPair();
             spawnDecoy();
 
             // Continuous spawn wave
+            clearInterval(spawnInterval);
             spawnInterval = setInterval(() => {
                 const count = document.querySelectorAll(".bubble").length;
                 if (count < 9) {
@@ -526,13 +523,21 @@ await db.collection("users").doc(currentUid).set({
                 }
             }, 2300);
 
-            // Timer Loop
+            // Precision Timer with Zero Clamping
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
+                if (!isGameRunning) {
+                    clearInterval(timerInterval);
+                    return;
+                }
                 gameTimer--;
-                document.getElementById("timerVal").innerText = gameTimer + "s";
                 if (gameTimer <= 0) {
+                    gameTimer = 0;
+                    document.getElementById("timerVal").innerText = "0s";
+                    clearInterval(timerInterval);
                     endBubbleGame();
+                } else {
+                    document.getElementById("timerVal").innerText = gameTimer + "s";
                 }
             }, 1000);
         }
@@ -564,7 +569,6 @@ await db.collection("users").doc(currentUid).set({
             bubble.style.left = startX + "px";
             bubble.style.top = posY + "px";
 
-            // Float physics speed with random drift
             const speed = 0.8 + Math.random() * 0.8;
             let drift = (Math.random() - 0.5) * 0.6;
 
@@ -577,7 +581,6 @@ await db.collection("users").doc(currentUid).set({
                 let curLeft = parseFloat(bubble.style.left) || startX;
                 curLeft += drift;
 
-                // Bounce walls
                 if (curLeft <= 5 || curLeft >= stageWidth) drift *= -1;
 
                 bubble.style.left = curLeft + "px";
@@ -596,7 +599,6 @@ await db.collection("users").doc(currentUid).set({
         function onBubbleClick(bubble) {
             if (!isGameRunning) return;
 
-            // Decoy Click Penalty
             if (bubble.dataset.isDecoy === "true") {
                 triggerWrongPenalty();
                 bubble.style.transform = "scale(0.8)";
@@ -604,23 +606,19 @@ await db.collection("users").doc(currentUid).set({
                 return;
             }
 
-            // Case 1: First Selection
             if (!selectedBubble) {
                 selectedBubble = bubble;
                 bubble.classList.add("selected");
                 return;
             }
 
-            // Case 2: Deselect same bubble
             if (selectedBubble === bubble) {
                 selectedBubble.classList.remove("selected");
                 selectedBubble = null;
                 return;
             }
 
-            // Case 3: Match Verification
             if (selectedBubble.dataset.value === bubble.dataset.value) {
-                // SUCCESS MATCH
                 comboStreak++;
                 let multiplier = comboStreak >= 4 ? 3 : (comboStreak >= 2 ? 2 : 1);
 
@@ -636,7 +634,6 @@ await db.collection("users").doc(currentUid).set({
                 document.getElementById("scoreVal").innerText = gameScore;
                 document.getElementById("matchVal").innerText = matchesCount;
 
-                // Pop animation
                 bubble.style.transform = "scale(1.35)";
                 selectedBubble.style.transform = "scale(1.35)";
                 bubble.style.opacity = "0";
@@ -648,7 +645,6 @@ await db.collection("users").doc(currentUid).set({
 
                 selectedBubble = null;
             } else {
-                // WRONG MATCH
                 triggerWrongPenalty();
             }
         }
@@ -656,7 +652,7 @@ await db.collection("users").doc(currentUid).set({
         function triggerWrongPenalty() {
             comboStreak = 0;
             comboEl.style.display = "none";
-            gameTimer = Math.max(0, gameTimer - 3); // -3s penalty
+            gameTimer = Math.max(0, gameTimer - 3);
             document.getElementById("timerVal").innerText = gameTimer + "s";
 
             stage.classList.add("shake-error");
@@ -669,9 +665,10 @@ await db.collection("users").doc(currentUid).set({
         }
 
         /* ==========================================================
-           ATOMIC MULTI-LOCATION FIRESTORE SYNC
+           ATOMIC FIRESTORE SCORE SYNC (FAIL-SAFE ENGINE)
            ========================================================== */
         async function endBubbleGame() {
+            if (!isGameRunning) return;
             isGameRunning = false;
             clearInterval(timerInterval);
             clearInterval(spawnInterval);
@@ -689,28 +686,38 @@ await db.collection("users").doc(currentUid).set({
 
             if (gameScore <= 0) return;
 
-            const user = auth.currentUser;
-            if (!user) {
-                alert(`Game Over! Scored ${gameScore} points. Login to link this score to the State Leaderboard!`);
+            // Dual Fallback: Auth user OR shared cookie
+            const cookieData = readSharedCookie();
+            const currentUid = (auth.currentUser && auth.currentUser.uid) || (cookieData ? cookieData.uid : null);
+            const studentName = (auth.currentUser && auth.currentUser.displayName) || (cookieData ? cookieData.name : "Student");
+
+            if (!currentUid) {
+                alert(`Game Over! Scored ${gameScore} points. Please login to save your record!`);
                 return;
             }
 
             try {
-                const studentName = user.displayName || (session ? session.name : user.email.split("@")[0]);
-
-                // 1. Update Game Profile (Best Roman Score & Game Total)
-                await db.collection("gameProfiles").doc(user.uid).set({
-                    uid: user.uid,
+                // 1. Update Game Profile (Individual Roman best score & game total)
+                await db.collection("gameProfiles").doc(currentUid).set({
+                    uid: currentUid,
                     name: studentName,
                     romanScore: firebase.firestore.FieldValue.increment(gameScore),
                     totalGameScore: firebase.firestore.FieldValue.increment(gameScore),
                     lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
 
-                                // 2. Update root domain cookie
+                // 2. Direct Sync to cbsesir.com Main Portal User Collection
+                await db.collection("users").doc(currentUid).set({
+                    totalScore: firebase.firestore.FieldValue.increment(gameScore)
+                }, { merge: true });
+
+                // 3. Local cookie update
                 updateSharedCookiePoints(gameScore);
 
-                console.log("Score written to Firestore & Main Leaderboard successfully!");
+                // 4. Instant UI update on this page
+                const currentDisplay = parseInt(userBestDisplay.innerText) || 0;
+                userBestDisplay.innerText = (currentDisplay + gameScore) + " pts";
+
             } catch (err) {
                 console.error("Firestore sync error:", err);
             }
