@@ -165,23 +165,6 @@
             text-transform: uppercase;
         }
 
-        .combo-badge {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            padding: 3px 12px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 900;
-            color: #fff;
-            display: none;
-            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
-            animation: pulseCombo 0.35s infinite alternate;
-        }
-
-        @keyframes pulseCombo {
-            from { transform: scale(1); }
-            to { transform: scale(1.1); }
-        }
-
         /* RAPID STAGE */
         .stage-box {
             position: relative;
@@ -456,7 +439,6 @@
                 <div>⏱ Timer: <b id="timerVal" style="color:var(--accent-blue);">60s</b></div>
                 <div><span class="level-indicator" id="levelDisplay">EASY (x = 1–10)</span></div>
                 <div>💥 Solved: <b id="solvedVal" style="color:var(--green);">0</b></div>
-                <div id="comboBadge" class="combo-badge">🔥 2X STREAK</div>
                 <div>⭐ Points: <b id="scoreVal" style="color:var(--gold);">0</b></div>
             </div>
 
@@ -475,7 +457,7 @@
                     <div style="font-size: 50px; margin-bottom: 8px;">🎯</div>
                     <h2 style="font-family:'Outfit', sans-serif; font-size: 28px; color:var(--primary-blue); font-weight:900; margin-bottom: 6px;">Algebra Rapid Fire</h2>
                     <p style="font-size: 14px; color:var(--text-muted); max-width: 440px; margin-bottom: 14px; line-height: 1.6;">
-                        Calculate linear equations at rapid speed! Correct gives <b>+5 pts</b>, wrong deducts <b>-2 pts</b>. Streak combos amplify scores!
+                        Calculate linear equations at rapid speed! Correct answer gives <b>+1 pt</b>. <b>No negative marking</b> for wrong attempts!
                     </p>
 
                     <input type="text" id="playerNameInput" class="name-input" placeholder="Enter student name">
@@ -503,7 +485,7 @@
             </div>
 
             <div style="font-size: 13px; color: var(--text-muted); text-align: center; font-weight: 600;">
-                Points belong exclusively to the <b>Game Arena</b> and never inflate your academic Quiz syllabus ranking.
+                Points belong exclusively to the <b>Game Arena</b> and never affect your academic Quiz syllabus ranking.
             </div>
         </div>
 
@@ -569,7 +551,7 @@
         };
     </script>
 
-    <!-- 4. FIREBASE & GAME ENGINE (ISOLATED FROM QUIZ SCORE) -->
+    <!-- 4. FIREBASE & GAME ENGINE -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCODdCPvN4L96ye0YuxippaIUHnEUwnT90",
@@ -653,7 +635,7 @@
             });
             listEl.innerHTML = html;
         }, err => {
-            console.warn("Firestore access offline/denied. Using LocalStorage fallback:", err);
+            console.warn("Firestore offline/fallback:", err);
             loadLocalScoresFallback();
         });
 
@@ -698,14 +680,13 @@
         });
 
         /* ==========================================================
-           GAME ENGINE WITH ISOLATED SCORING & DIFFICULTY TIERS
+           GAME ENGINE (1 POINT PER CORRECT, ZERO PENALTY)
            ========================================================== */
         let score = 0;
         let timeLeft = 60;
         let timer = null;
         let correctAnswer = 0;
         let solvedCount = 0;
-        let streak = 0;
         let selectedLevel = 'easy';
         let isGameRunning = false;
 
@@ -793,28 +774,19 @@
                 AudioFX.playCorrect();
                 btn.classList.add("correct");
                 solvedCount++;
-                streak++;
-
-                let multiplier = streak >= 5 ? 3 : (streak >= 3 ? 2 : 1);
-                if (multiplier > 1) {
-                    document.getElementById("comboBadge").style.display = "inline-block";
-                    document.getElementById("comboBadge").innerText = `🔥 ${multiplier}X STREAK`;
-                }
-
-                let gain = 5 * multiplier;
-                score += gain;
-                showFloatingPoint(`+${gain}`, '#16a34a', clickX, clickY);
+                
+                // EXACTLY 1 POINT ADDED
+                score += 1;
+                showFloatingPoint(`+1`, '#16a34a', clickX, clickY);
 
             } else {
                 AudioFX.playWrong();
                 btn.classList.add("wrong");
-                streak = 0;
-                document.getElementById("comboBadge").style.display = "none";
-                score = Math.max(0, score - 2);
-
+                
+                // NO NEGATIVE MARKING (0 points deducted)
                 document.getElementById("stageBox").classList.add("shake-error");
                 setTimeout(() => document.getElementById("stageBox").classList.remove("shake-error"), 350);
-                showFloatingPoint(`-2`, '#dc2626', clickX, clickY);
+                showFloatingPoint(`0`, '#dc2626', clickX, clickY);
             }
 
             document.getElementById("scoreVal").innerText = score;
@@ -834,12 +806,10 @@
             score = 0;
             timeLeft = 60;
             solvedCount = 0;
-            streak = 0;
             isGameRunning = true;
 
             document.getElementById("startOverlay").style.display = "none";
             document.getElementById("resultOverlay").style.display = "none";
-            document.getElementById("comboBadge").style.display = "none";
 
             document.getElementById("scoreVal").innerText = "0";
             document.getElementById("solvedVal").innerText = "0";
@@ -872,7 +842,7 @@
             loadLocalScoresFallback();
 
             document.getElementById("resultSummaryText").innerHTML = `
-                Well done, <b>${name}</b>! You solved <b>${solvedCount} equations</b> and racked up <b style="color:var(--primary-blue); font-size:22px;">+${score} pts</b>.
+                Well done, <b>${name}</b>! You solved <b>${solvedCount} equations</b> and earned <b style="color:var(--primary-blue); font-size:22px;">+${score} pts</b>.
             `;
             document.getElementById("resultOverlay").style.display = "flex";
 
