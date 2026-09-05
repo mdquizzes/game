@@ -25,7 +25,6 @@
             --text-muted: #64748b;
             --border-light: #e2e8f0;
             --gold: #d97706;
-            --gold-light: #fef3c7;
             --green: #16a34a;
             --green-light: #dcfce7;
             --red: #dc2626;
@@ -44,7 +43,7 @@
             -webkit-user-select: none;
         }
 
-        /* 1. TOP NAVBAR (WHITE THEME) */
+        /* 1. TOP NAVBAR */
         .game-nav {
             background: #ffffff;
             border-bottom: 1px solid var(--border-light);
@@ -154,6 +153,17 @@
         }
         .hud-stats b { font-family: 'Outfit', sans-serif; font-size: 19px; }
 
+        .level-indicator {
+            background: var(--soft-blue);
+            color: var(--primary-blue);
+            padding: 3px 10px;
+            border-radius: 8px;
+            border: 1px solid #bfdbfe;
+            font-size: 11.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
         .combo-badge {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             padding: 3px 12px;
@@ -212,7 +222,6 @@
 
         .bubble:hover { transform: scale(1.12); }
         
-        /* Light Gradient Themes */
         .bubble.roman { 
             background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
             color: #ffffff;
@@ -284,7 +293,7 @@
         .bubble-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(255, 255, 255, 0.94);
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(8px);
             display: flex;
             flex-direction: column;
@@ -293,6 +302,37 @@
             z-index: 30;
             text-align: center;
             padding: 24px;
+        }
+
+        /* Level Selector Controls */
+        .level-selector-box {
+            display: flex;
+            gap: 10px;
+            margin: 16px 0 20px 0;
+        }
+
+        .level-btn {
+            background: #ffffff;
+            border: 2px solid var(--border-light);
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 13.5px;
+            cursor: pointer;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+        }
+
+        .level-btn:hover {
+            border-color: #bfdbfe;
+            background: var(--soft-blue);
+        }
+
+        .level-btn.active {
+            border-color: var(--primary-blue);
+            background: var(--soft-blue);
+            color: var(--primary-blue);
+            box-shadow: 0 4px 12px rgba(11, 75, 193, 0.15);
         }
 
         .btn-play-action {
@@ -309,7 +349,7 @@
         }
         .btn-play-action:hover { background: var(--accent-blue); transform: translateY(-2px); }
 
-        /* 4. LEADERBOARD PANEL (WHITE THEME) */
+        /* 4. LEADERBOARD PANEL */
         .leaderboard-panel {
             background: #ffffff;
             border: 1px solid var(--border-light);
@@ -356,13 +396,14 @@
             .arena-wrapper { grid-template-columns: 1fr; }
             .game-nav { flex-direction: column; gap: 12px; }
             .bubble-stage { height: 430px; }
+            .level-selector-box { flex-direction: column; width: 100%; max-width: 250px; }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- 1. TOP NAVBAR WITH DIRECT BRIDGES -->
+    <!-- 1. TOP NAVBAR -->
     <nav class="game-nav">
         <a href="https://game.cbsesir.com" class="brand-link">
             <span>📐 MD QUIZZES</span>
@@ -388,24 +429,34 @@
         <div class="game-panel">
             <div class="hud-stats">
                 <div>⏱ Timer: <b id="timerVal" style="color:var(--accent-blue);">45s</b></div>
-                <div>💥 Matches: <b id="matchVal" style="color:var(--green);">0</b></div>
+                <div><span class="level-indicator" id="levelDisplay">EASY (1-20)</span></div>
+                <div>💥 Pairs: <b id="matchVal" style="color:var(--green);">0</b></div>
                 <div id="comboBadge" class="combo-badge">🔥 2X COMBO</div>
                 <div>⭐ Run Points: <b id="scoreVal" style="color:var(--gold);">0</b></div>
             </div>
 
             <div class="bubble-stage" id="bubbleStage">
+                <!-- START & DIFFICULTY OVERLAY -->
                 <div class="bubble-overlay" id="startOverlay">
-                    <div style="font-size: 52px; margin-bottom: 10px;">🫧</div>
+                    <div style="font-size: 48px; margin-bottom: 8px;">🫧</div>
                     <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--primary-blue); margin-bottom: 6px; font-weight: 900;">Roman Bubble Frenzy Pro</h2>
-                    <p style="font-size: 14px; color:var(--text-muted); max-width: 440px; margin-bottom: 22px; line-height: 1.6;">
-                        Pop matching <b style="color:var(--accent-blue);">Blue Roman</b> &amp; <b style="color:var(--green);">Green Hindu</b> pairs! Beware of <b style="color:var(--red);">Red Decoys</b>. Catch <b style="color:var(--gold);">Golden Clocks</b> for +5 seconds!
+                    <p style="font-size: 13.5px; color:var(--text-muted); max-width: 440px; margin-bottom: 12px; line-height: 1.6;">
+                        Pop matching <b style="color:var(--accent-blue);">Blue Roman</b> &amp; <b style="color:var(--green);">Green Hindu</b> pairs (<b>+2 pts</b>)! Mismatched bubbles float away safely to the top without bursting!
                     </p>
-                    <button class="btn-play-action" onclick="initBubbleGame()">▶ Start Challenge</button>
+
+                    <div style="font-size: 12px; font-weight: 800; color:var(--text-dark); text-transform: uppercase; margin-bottom: 6px;">Select Difficulty:</div>
+                    <div class="level-selector-box">
+                        <button class="level-btn active" id="btnEasy" onclick="selectLevel('easy')">🌱 Easy (1–20)</button>
+                        <button class="level-btn" id="btnMed" onclick="selectLevel('medium')">⚡ Medium (1–50)</button>
+                        <button class="level-btn" id="btnHard" onclick="selectLevel('hard')">🔥 Hard (1–100)</button>
+                    </div>
+
+                    <button class="btn-play-action" onclick="initBubbleGame()">▶ Start Game</button>
                 </div>
             </div>
 
             <div style="font-size: 13px; color: var(--text-muted); text-align: center; font-weight: 600;">
-                Build combos for multipliers! Earned points instantly sync to your <b>cbsesir.com</b> Global Rank.
+                Build combos for multipliers! Earned points automatically sync to your <b>cbsesir.com</b> Global Rank.
             </div>
         </div>
 
@@ -428,7 +479,7 @@
 
     </main>
 
-    <!-- 3. SYNTHESIZED SOUND EFFECTS ENGINE (Zero External Dependencies) -->
+    <!-- 3. SYNTHESIZED SOUND EFFECTS ENGINE -->
     <script>
         const AudioFX = {
             ctx: null,
@@ -473,9 +524,9 @@
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
-                osc.frequency.linearRampToValueAtTime(110, this.ctx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(130, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -500,7 +551,7 @@
         };
     </script>
 
-    <!-- 4. FIREBASE SYNC & ADVANCED GAME ENGINE -->
+    <!-- 4. GAME ENGINE & FIREBASE SYNC -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCODdCPvN4L96ye0YuxippaIUHnEUwnT90",
@@ -611,17 +662,54 @@
         });
 
         /* ==========================================================
-           GAMEPLAY ENGINE WITH PARTICLES, SOUNDS & BONUSES
+           DYNAMIC ROMAN GENERATOR & LEVEL POOLS (1-20, 1-50, 1-100)
            ========================================================== */
-        const PAIRS_DATA = [
-            { num: 1, rom: "I" }, { num: 4, rom: "IV" }, { num: 5, rom: "V" },
-            { num: 9, rom: "IX" }, { num: 10, rom: "X" }, { num: 14, rom: "XIV" },
-            { num: 15, rom: "XV" }, { num: 19, rom: "XIX" }, { num: 20, rom: "XX" },
-            { num: 40, rom: "XL" }, { num: 50, rom: "L" }, { num: 90, rom: "XC" },
-            { num: 100, rom: "C" }, { num: 500, rom: "D" }, { num: 1000, rom: "M" }
-        ];
+        function toRoman(num) {
+            const lookup = [
+                ["C", 100], ["XC", 90], ["L", 50], ["XL", 40],
+                ["X", 10], ["IX", 9], ["V", 5], ["IV", 4], ["I", 1]
+            ];
+            let roman = "";
+            for (const [letter, value] of lookup) {
+                while (num >= value) {
+                    roman += letter;
+                    num -= value;
+                }
+            }
+            return roman;
+        }
 
-        const DECOY_SYMBOLS = ["XII", "XXV", "LIV", "37", "88", "LX", "99", "CX"];
+        let selectedLevel = 'easy'; // easy, medium, hard
+        let activePairsPool = [];
+        let decoyPool = [];
+
+        function selectLevel(lvl) {
+            selectedLevel = lvl;
+            document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+            if (lvl === 'easy') {
+                document.getElementById('btnEasy').classList.add('active');
+                document.getElementById('levelDisplay').innerText = "EASY (1-20)";
+            } else if (lvl === 'medium') {
+                document.getElementById('btnMed').classList.add('active');
+                document.getElementById('levelDisplay').innerText = "MEDIUM (1-50)";
+            } else {
+                document.getElementById('btnHard').classList.add('active');
+                document.getElementById('levelDisplay').innerText = "HARD (1-100)";
+            }
+        }
+
+        function generateLevelPools() {
+            let max = 20;
+            if (selectedLevel === 'medium') max = 50;
+            if (selectedLevel === 'hard') max = 100;
+
+            activePairsPool = [];
+            for (let i = 1; i <= max; i++) {
+                activePairsPool.push({ num: i, rom: toRoman(i) });
+            }
+
+            decoyPool = ["XIIX", "IIII", "VV", "LL", "XXXX", "IC", "VX", "DM", "99X"];
+        }
 
         let gameTimer = 45;
         let gameScore = 0;
@@ -639,6 +727,8 @@
         function initBubbleGame() {
             overlay.style.display = "none";
             document.querySelectorAll(".bubble").forEach(b => b.remove());
+
+            generateLevelPools();
 
             gameTimer = 45;
             gameScore = 0;
@@ -661,8 +751,8 @@
                 const count = document.querySelectorAll(".bubble").length;
                 if (count < 9) {
                     spawnPair();
-                    if (Math.random() > 0.45) spawnDecoy();
-                    if (Math.random() < 0.18) spawnBonusClock();
+                    if (Math.random() > 0.5) spawnDecoy();
+                    if (Math.random() < 0.16) spawnBonusClock();
                 }
             }, 2100);
 
@@ -686,14 +776,14 @@
 
         function spawnPair() {
             if (!isGameRunning) return;
-            const pair = PAIRS_DATA[Math.floor(Math.random() * PAIRS_DATA.length)];
+            const pair = activePairsPool[Math.floor(Math.random() * activePairsPool.length)];
             createBubble(pair.num, "hindu", pair.num, false, false);
             createBubble(pair.rom, "roman", pair.num, false, false);
         }
 
         function spawnDecoy() {
             if (!isGameRunning) return;
-            const fake = DECOY_SYMBOLS[Math.floor(Math.random() * DECOY_SYMBOLS.length)];
+            const fake = decoyPool[Math.floor(Math.random() * decoyPool.length)];
             createBubble(fake, "decoy", "decoy_" + Math.random(), true, false);
         }
 
@@ -717,7 +807,7 @@
             bubble.style.left = startX + "px";
             bubble.style.top = posY + "px";
 
-            const speed = 0.9 + Math.random() * 0.9;
+            const speed = 0.85 + Math.random() * 0.85;
             let drift = (Math.random() - 0.5) * 0.7;
 
             const floatInterval = setInterval(() => {
@@ -734,8 +824,10 @@
                 bubble.style.left = curLeft + "px";
                 bubble.style.top = posY + "px";
 
-                if (posY <= -80) {
+                // UPAR JAAKAR DISAPPEAR HOGA BINA BURST HUYE
+                if (posY <= -85) {
                     clearInterval(floatInterval);
+                    if (selectedBubble === bubble) selectedBubble = null;
                     bubble.remove();
                 }
             }, 25);
@@ -786,16 +878,14 @@
                 return;
             }
 
-            // DECOY CLICK
+            // DECOY CLICK (Penalty lagti hai par bubble break nahi hota, unselect hota hai)
             if (bubble.dataset.isDecoy === "true") {
                 AudioFX.playWrong();
                 triggerWrongPenalty();
-                bubble.style.transform = "scale(0.8)";
-                setTimeout(() => bubble.remove(), 150);
                 return;
             }
 
-            // FIRST BUBBLE SELECTION
+            // PEHLA BUBBLE SELECT
             if (!selectedBubble) {
                 AudioFX.playPop();
                 selectedBubble = bubble;
@@ -803,7 +893,7 @@
                 return;
             }
 
-            // DESELECT
+            // DUSRI BAAR WAHI BUBBLE TAP KIA TO UNSELECT
             if (selectedBubble === bubble) {
                 AudioFX.playPop();
                 selectedBubble.classList.remove("selected");
@@ -822,7 +912,8 @@
                     comboEl.innerText = `🔥 ${multiplier}X COMBO`;
                 }
 
-                const earnedPoints = 20 * multiplier;
+                // 2 POINTS PER RIGHT MATCH (with combo multiplier)
+                const earnedPoints = 2 * multiplier;
                 gameScore += earnedPoints;
                 matchesCount++;
 
@@ -834,6 +925,7 @@
                 showFloatingScore(`+${earnedPoints}`, rect.left - sRect.left, rect.top - sRect.top);
                 triggerSparkles(rect.left - sRect.left + 35, rect.top - sRect.top + 35);
 
+                // Sirf Match hone par Bubble Popping Effect
                 bubble.style.transform = "scale(1.35)";
                 selectedBubble.style.transform = "scale(1.35)";
                 bubble.style.opacity = "0";
@@ -845,6 +937,7 @@
 
                 selectedBubble = null;
             } else {
+                // MISMATCH: BUBBLE DESTROY/BREAK NAHI HOGA, SIRF PENALTY & UNSELECT
                 AudioFX.playWrong();
                 triggerWrongPenalty();
             }
@@ -859,6 +952,7 @@
             stage.classList.add("shake-error");
             setTimeout(() => stage.classList.remove("shake-error"), 350);
 
+            // Dono bubbles zinda rahenge, bas selection hat jayega aur upar jate rahenge
             if (selectedBubble) {
                 selectedBubble.classList.remove("selected");
                 selectedBubble = null;
@@ -866,7 +960,7 @@
         }
 
         /* ==========================================================
-           ATOMIC FIRESTORE SCORE SYNC (FAIL-SAFE)
+           END GAME & FIREBASE POINTS SAVE
            ========================================================== */
         async function endBubbleGame() {
             if (!isGameRunning) return;
@@ -877,11 +971,18 @@
 
             overlay.style.display = "flex";
             overlay.innerHTML = `
-                <div style="font-size: 50px; margin-bottom: 8px;">🏆</div>
-                <h2 style="font-family:'Outfit', sans-serif; font-size: 28px; color:var(--primary-blue); font-weight:900;">Challenge Concluded!</h2>
-                <p style="font-size: 15px; color:var(--text-dark); margin: 8px 0 18px 0; font-weight:600;">
-                    You popped <b>${matchesCount} matching pairs</b> and racked up <b style="color:var(--primary-blue); font-size:24px;">+${gameScore}</b> pts!
+                <div style="font-size: 48px; margin-bottom: 6px;">🏆</div>
+                <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--primary-blue); font-weight:900;">Round Complete!</h2>
+                <p style="font-size: 14.5px; color:var(--text-dark); margin: 6px 0 16px 0; font-weight:600;">
+                    You popped <b>${matchesCount} matching pairs</b> on <b>${selectedLevel.toUpperCase()}</b> and earned <b style="color:var(--primary-blue); font-size:22px;">+${gameScore}</b> pts!
                 </p>
+                <div style="margin-bottom:15px;">
+                    <div class="level-selector-box">
+                        <button class="level-btn ${selectedLevel === 'easy' ? 'active' : ''}" onclick="selectLevel('easy')">🌱 Easy (1–20)</button>
+                        <button class="level-btn ${selectedLevel === 'medium' ? 'active' : ''}" onclick="selectLevel('medium')">⚡ Medium (1–50)</button>
+                        <button class="level-btn ${selectedLevel === 'hard' ? 'active' : ''}" onclick="selectLevel('hard')">🔥 Hard (1–100)</button>
+                    </div>
+                </div>
                 <button class="btn-play-action" onclick="initBubbleGame()">🔄 Play Again</button>
             `;
 
@@ -892,7 +993,7 @@
             const studentName = (auth.currentUser && auth.currentUser.displayName) || (cookieData ? cookieData.name : "Student");
 
             if (!currentUid) {
-                alert(`Game Over! Scored ${gameScore} points. Please login to record your score!`);
+                alert(`Game Over! Scored ${gameScore} points. Please login to save your record!`);
                 return;
             }
 
