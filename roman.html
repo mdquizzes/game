@@ -18,7 +18,10 @@
         :root {
             --gold: #ffd60a;
             --cyan: #38bdf8;
-            --green: #10b981;
+            --green: #10b981;// Is block ko remove/comment kar dene se game points main quiz me add nahi honge:
+await db.collection("users").doc(currentUid).set({
+    totalScore: firebase.firestore.FieldValue.increment(gameScore)
+}, { merge: true });
             --red: #ef4444;
             --border-subtle: rgba(255, 255, 255, 0.1);
             --border-gold: rgba(255, 214, 10, 0.35);
@@ -704,12 +707,7 @@
                     lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
 
-                // 2. Force increment in users collection (for cbsesir.com Main Leaderboard)
-                await db.collection("users").doc(user.uid).set({
-                    totalScore: firebase.firestore.FieldValue.increment(gameScore)
-                }, { merge: true });
-
-                // 3. Update root domain cookie
+                                // 2. Update root domain cookie
                 updateSharedCookiePoints(gameScore);
 
                 console.log("Score written to Firestore & Main Leaderboard successfully!");
