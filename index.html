@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MD Educational Games - Smart Gaming Arena</title>
 
-    <!-- Professional Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Firebase SDKs -->
@@ -29,6 +28,7 @@
             --cyan: #38bdf8;
             --green: #10b981;
             --border-subtle: rgba(255, 255, 255, 0.1);
+            --border-gold: rgba(255, 214, 10, 0.35);
         }
 
         body {
@@ -39,9 +39,7 @@
             flex-direction: column;
         }
 
-        /* =========================
-           1. TOP UNIFIED NAVIGATION
-        ========================= */
+        /* 1. TOP NAVBAR */
         .game-nav {
             background: rgba(2, 9, 23, 0.95);
             backdrop-filter: blur(14px);
@@ -64,7 +62,6 @@
             font-family: 'Outfit', sans-serif;
             font-size: 20px;
             font-weight: 800;
-            letter-spacing: 0.3px;
         }
 
         .brand-tag {
@@ -89,10 +86,7 @@
             font-weight: 600;
             color: #cbd5e1;
         }
-
-        .user-status-text b {
-            color: var(--gold);
-        }
+        .user-status-text b { color: var(--gold); }
 
         .btn-action {
             padding: 7px 15px;
@@ -120,13 +114,11 @@
         .btn-logout { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
         .btn-logout:hover { background: #ef4444; color: #fff; }
 
-        /* =========================
-           2. LIVE GAMER HUD STRIP
-        ========================= */
+        /* 2. GAMER DASHBOARD STRIP */
         .gamer-hud-bar {
             background: #020713;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 10px 0;
+            padding: 12px 0;
             font-size: 13px;
         }
 
@@ -138,13 +130,14 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
         }
 
         .hud-stats-group {
             display: flex;
-            gap: 16px;
+            gap: 12px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .hud-item {
@@ -152,44 +145,31 @@
             align-items: center;
             gap: 6px;
             background: #08162f;
-            padding: 4px 12px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             font-weight: 600;
         }
 
-        /* =========================
-           3. HERO BANNER
-        ========================= */
+        /* 3. HERO BANNER */
         header.hero-banner {
             text-align: center;
-            padding: 45px 20px 25px 20px;
+            padding: 40px 20px 20px 20px;
             max-width: 900px;
             margin: 0 auto;
         }
 
         header.hero-banner h1 {
             font-family: 'Outfit', sans-serif;
-            font-size: 38px;
+            font-size: 36px;
             font-weight: 800;
             color: #fff;
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
+            margin-bottom: 8px;
         }
+        header.hero-banner h1 span { color: var(--gold); }
+        header.hero-banner p { font-size: 15px; color: #94a3b8; }
 
-        header.hero-banner h1 span {
-            color: var(--gold);
-        }
-
-        header.hero-banner p {
-            font-size: 16px;
-            color: #94a3b8;
-            line-height: 1.6;
-        }
-
-        /* =========================
-           4. GAME GRID & CARDS
-        ========================= */
+        /* 4. MAIN LAYOUT */
         .container {
             width: 92%;
             max-width: 1220px;
@@ -200,28 +180,28 @@
         .games-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
+            gap: 22px;
+            margin-bottom: 40px;
         }
 
         .game-card {
             background: #0b172d;
-            border-radius: 20px;
-            padding: 30px 24px;
+            border-radius: 18px;
+            padding: 26px 20px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             border: 1px solid var(--border-subtle);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             position: relative;
-            overflow: hidden;
+            transition: all 0.25s ease;
         }
 
         .game-card:hover {
-            transform: translateY(-8px);
-            border-color: rgba(255, 214, 10, 0.35);
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+            transform: translateY(-6px);
+            border-color: var(--border-gold);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
         }
 
         .badge-status {
@@ -235,108 +215,96 @@
             text-transform: uppercase;
         }
 
-        .status-live {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
+        .status-live { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-soon { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
 
-        .status-soon {
-            background: rgba(239, 68, 68, 0.15);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
+        .game-icon { font-size: 48px; margin-bottom: 12px; }
+        .game-card h3 { font-family: 'Outfit', sans-serif; font-size: 20px; color: #fff; margin-bottom: 6px; }
+        .game-card p { font-size: 13px; color: #94a3b8; margin-bottom: 16px; flex: 1; }
 
-        .game-icon {
-            font-size: 52px;
-            margin-bottom: 15px;
-            display: inline-block;
-            transition: transform 0.3s ease;
-        }
-
-        .game-card:hover .game-icon {
-            transform: scale(1.12);
-        }
-
-        .game-card h3 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 21px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: #ffffff;
-        }
-
-        .game-card p {
-            font-size: 13.5px;
-            color: #94a3b8;
-            line-height: 1.6;
-            margin-bottom: 24px;
-            flex: 1;
+        .game-score-badge {
+            background: #061124;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 6px 12px;
+            margin-bottom: 16px;
+            font-size: 12.5px;
+            color: #cbd5e1;
         }
 
         .play-btn {
             display: inline-block;
             text-decoration: none;
             color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
+            padding: 11px 20px;
+            border-radius: 10px;
             font-weight: 800;
-            font-size: 14px;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
-            border: none;
-            cursor: pointer;
+            font-size: 13.5px;
+            transition: 0.2s;
             width: 100%;
         }
 
-        .play-btn:hover {
-            transform: translateY(-2px);
-            opacity: 0.95;
-        }
-
-        /* Color Variations */
         .battle .play-btn { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
         .maths .play-btn { background: linear-gradient(135deg, #059669, #047857); }
-        .science .play-btn { background: linear-gradient(135deg, #0284c7, #0369a1); }
-        .medical .play-btn { background: linear-gradient(135deg, #dc2626, #b91c1c); }
         .puzzle .play-btn { background: linear-gradient(135deg, #ea580c, #c2410c); }
-        .multiplayer .play-btn { background: linear-gradient(135deg, #db2777, #be185d); }
+        .btn-disabled { background: #1e293b !important; color: #64748b !important; cursor: not-allowed; }
 
-        .btn-disabled {
-            background: #1e293b !important;
-            color: #64748b !important;
-            cursor: not-allowed;
-            box-shadow: none !important;
-            transform: none !important;
+        /* 5. LIVE GAME ARENA LEADERBOARD */
+        .arena-leaderboard-box {
+            background: #0b172d;
+            border: 1px solid var(--border-gold);
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         }
 
-        /* =========================
-           5. FOOTER
-        ========================= */
+        .arena-lead-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        .arena-lead-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            color: var(--gold);
+        }
+
+        .leader-row-game {
+            background: #061124;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            font-size: 14px;
+        }
+
         footer {
             margin-top: auto;
             background: #01060f;
             border-top: 1px solid var(--border-subtle);
             color: #64748b;
             text-align: center;
-            padding: 30px 20px;
-            font-size: 13.5px;
-            line-height: 1.8;
+            padding: 26px 20px;
+            font-size: 13px;
         }
 
-        footer b { color: #cbd5e1; }
-
-        @media (max-width: 768px) {
-            .game-nav { flex-direction: column; gap: 12px; text-align: center; }
-            .hud-container { justify-content: center; text-align: center; }
-            header.hero-banner h1 { font-size: 30px; }
+        @media(max-width: 768px) {
+            .game-nav { flex-direction: column; gap: 10px; }
+            .hud-container { justify-content: center; }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- ================= 1. UNIFIED TOP NAVIGATION ================= -->
+    <!-- 1. TOP BAR -->
     <nav class="game-nav">
         <a href="https://cbsesir.com" class="brand-link">
             <span>📐 MD QUIZZES</span>
@@ -344,122 +312,137 @@
         </a>
 
         <div class="nav-right-actions">
-            <span class="user-status-text" id="gameUserStatus">👤 Checking session...</span>
+            <span class="user-status-text" id="gameUserStatus">👤 Checking...</span>
             <a href="https://cbsesir.com" class="btn-action btn-home">🏠 Main Blog</a>
             <a href="https://quiz.cbsesir.com/login.html" class="btn-action btn-login" id="gameLoginBtn">🔑 Login</a>
             <a href="https://quiz.cbsesir.com/profile.html" class="btn-action btn-profile" id="gameProfileBtn" style="display:none;">👤 Profile</a>
-            <button class="btn-action btn-logout" id="gameLogoutBtn" onclick="executeGameLogout()" style="display:none;" type="button">🚪 Logout</button>
+            <button class="btn-action btn-logout" id="gameLogoutBtn" onclick="gameLogout()" style="display:none;" type="button">🚪 Logout</button>
         </div>
     </nav>
 
-    <!-- ================= 2. LIVE GAMER HUD STRIP ================= -->
+    <!-- 2. TOTAL & INDIVIDUAL GAME HUD -->
     <div class="gamer-hud-bar">
         <div class="hud-container">
-            <div style="color:#94a3b8;">
-                🎮 <b>Active Arcade:</b> Compete, beat live timers, and push your state rank!
+            <div class="hud-stats-group">
+                <div class="hud-item">
+                    <span>🎮 Total Game Points:</span>
+                    <b id="hudTotalGameScore" style="color:var(--gold);">0</b>
+                </div>
+                <div class="hud-item">
+                    <span>🏆 Arena Rank:</span>
+                    <b id="hudArenaRank" style="color:var(--cyan);">#--</b>
+                </div>
             </div>
             <div class="hud-stats-group">
                 <div class="hud-item">
-                    <span>⭐ Score:</span>
-                    <b id="hudScoreVal" style="color:var(--gold);">0</b>
+                    <span>⚔️ Battle:</span>
+                    <b id="hudBattleScore" style="color:#60a5fa;">0</b>
                 </div>
                 <div class="hud-item">
-                    <span>🏆 Rank:</span>
-                    <b id="hudRankVal" style="color:var(--cyan);">#--</b>
+                    <span>🧮 Roman:</span>
+                    <b id="hudRomanScore" style="color:#34d399;">0</b>
+                </div>
+                <div class="hud-item">
+                    <span>⚡ Algebra:</span>
+                    <b id="hudAlgebraScore" style="color:#fb923c;">0</b>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ================= 3. HERO BANNER ================= -->
+    <!-- 3. HERO -->
     <header class="hero-banner">
-        <h1>Choose Your <span>Challenge</span></h1>
-        <p>Master curriculum concepts through gamified challenges, rapid-fire speed games, and live high-score tracking.</p>
+        <h1>Educational <span>Games &amp; Arenas</span></h1>
+        <p>Challenge opponents, beat countdown timers, and push your live rank on the state leaderboard!</p>
     </header>
 
-    <!-- ================= 4. MAIN GAME GRID ================= -->
+    <!-- 4. CARDS -->
     <main class="container">
         <div class="games-grid">
 
-            <!-- 1. Battle Challenge -->
+            <!-- Battle Challenge -->
             <div class="game-card battle">
-                <span class="badge-status status-live">Active</span>
-                <div>
-                    <div class="game-icon">⚔️</div>
-                    <h3>Battle Challenge</h3>
-                    <p>Play tactical guess challenges against automated opponents and sharpen mental deduction.</p>
-                </div>
+                <span class="badge-status status-live">Live</span>
+                <div class="game-icon">⚔️</div>
+                <h3>Battle Challenge</h3>
+                <p>Guess numbers against opponents and sharpen tactical reasoning.</p>
+                <div class="game-score-badge">Your Best: <b id="cardBattleScore" style="color:#60a5fa;">0</b> pts</div>
                 <a href="battle.html" class="play-btn">▶ Play Battle</a>
             </div>
 
-            <!-- 2. Maths Roman Challenge -->
+            <!-- Maths Roman Match -->
             <div class="game-card maths">
                 <span class="badge-status status-live">Popular</span>
-                <div>
-                    <div class="game-icon">🧮</div>
-                    <h3>Maths Roman Match</h3>
-                    <p>Speed connect pairs of Roman numerals and Hindu-Arabic numbers against shrinking timers.</p>
-                </div>
+                <div class="game-icon">🧮</div>
+                <h3>Maths Roman Match</h3>
+                <p>Match Roman and Hindu-Arabic numbers against live countdowns.</p>
+                <div class="game-score-badge">Your Best: <b id="cardRomanScore" style="color:#34d399;">0</b> pts</div>
                 <a href="roman.html" class="play-btn">▶ Play Maths</a>
             </div>
 
-            <!-- 3. Science Challenge -->
-            <div class="game-card science">
-                <span class="badge-status status-soon">Coming Soon</span>
-                <div>
-                    <div class="game-icon">🔬</div>
-                    <h3>Science Arena</h3>
-                    <p>Interactive ray diagram simulations, balanced chemical equations, and biology organ puzzles.</p>
-                </div>
-                <button class="play-btn btn-disabled" disabled>Under Development</button>
-            </div>
-
-            <!-- 4. Medical / NEET Games -->
-            <div class="game-card medical">
-                <span class="badge-status status-soon">Coming Soon</span>
-                <div>
-                    <div class="game-icon">🩺</div>
-                    <h3>NEET Medical Arena</h3>
-                    <p>Rapid botanical classification, human physiology nomenclature, and organic mechanism puzzles.</p>
-                </div>
-                <button class="play-btn btn-disabled" disabled>Under Development</button>
-            </div>
-
-            <!-- 5. Algebra Rapid Fire -->
+            <!-- Algebra Rapid Fire -->
             <div class="game-card puzzle">
-                <span class="badge-status status-live">Live</span>
-                <div>
-                    <div class="game-icon">🧩</div>
-                    <h3>Algebra Rapid Fire</h3>
-                    <p>Solve quadratic, linear, and polynomial mental equations within strict countdown seconds.</p>
-                </div>
+                <span class="badge-status status-live">Speed</span>
+                <div class="game-icon">🧩</div>
+                <h3>Algebra Rapid Fire</h3>
+                <p>Solve quadratic &amp; polynomial equations before the buzzer.</p>
+                <div class="game-score-badge">Your Best: <b id="cardAlgebraScore" style="color:#fb923c;">0</b> pts</div>
                 <a href="class10.html" class="play-btn">▶ Play Rapid Fire</a>
             </div>
 
-            <!-- 6. Multiplayer Arena -->
-            <div class="game-card multiplayer">
+            <!-- Science Arena -->
+            <div class="game-card">
+                <span class="badge-status status-soon">Coming Soon</span>
+                <div class="game-icon">🔬</div>
+                <h3>Science Arena</h3>
+                <p>Interactive ray diagrams, chemistry balancing, and biology puzzles.</p>
+                <div class="game-score-badge">Status: In Development</div>
+                <button class="play-btn btn-disabled" disabled>Coming Soon</button>
+            </div>
+
+            <!-- NEET Medical -->
+            <div class="game-card">
+                <span class="badge-status status-soon">Coming Soon</span>
+                <div class="game-icon">🩺</div>
+                <h3>NEET Medical Arena</h3>
+                <p>Botany classification, human anatomy speed rounds, and formulas.</p>
+                <div class="game-score-badge">Status: In Development</div>
+                <button class="play-btn btn-disabled" disabled>Coming Soon</button>
+            </div>
+
+            <!-- Multiplayer -->
+            <div class="game-card">
                 <span class="badge-status status-soon">In Progress</span>
-                <div>
-                    <div class="game-icon">🏆</div>
-                    <h3>Live Multiplayer</h3>
-                    <p>Direct 1-vs-1 real-time school classroom battles with automated live spectator boards.</p>
-                </div>
-                <button class="play-btn btn-disabled" disabled>Under Development</button>
+                <div class="game-icon">🏆</div>
+                <h3>Live Classroom Arena</h3>
+                <p>Direct 1-vs-1 real-time school classroom battles with spectator boards.</p>
+                <div class="game-score-badge">Status: In Development</div>
+                <button class="play-btn btn-disabled" disabled>Coming Soon</button>
             </div>
 
         </div>
+
+        <!-- 5. LIVE GAME LEADERBOARD -->
+        <div class="arena-leaderboard-box">
+            <div class="arena-lead-header">
+                <h2>🏆 Top Game Arena Champions</h2>
+                <span style="font-size:13px; color:#94a3b8;">Realtime State Ranks</span>
+            </div>
+            <div id="arenaLeaderList">
+                <div style="text-align:center; color:#94a3b8; padding:15px;">Loading arena rankings...</div>
+            </div>
+        </div>
     </main>
 
-    <!-- ================= 5. FOOTER ================= -->
     <footer>
         <p><b>MD Educational Games &amp; Quizzes Portal</b> &copy; 2026</p>
-        <p style="font-size:12.5px; margin-top:4px;">Unified Gaming &amp; Performance Sync Engine • Connected to cbsesir.com</p>
+        <p style="font-size:12px; margin-top:4px;">Connected across cbsesir.com &bull; quiz.cbsesir.com</p>
     </footer>
 
-    <!-- ================= 6. AUTH & HUD SCRIPT ================= -->
+    <!-- SCRIPT -->
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyC0dDCPvN4L96ye0YuxippaIUHnEUwnT90",
+            apiKey: "AIzaSyCODdCPvN4L96ye0YuxippaIUHnEUwnT90",
             authDomain: "mdquizzes-c255a.firebaseapp.com",
             projectId: "mdquizzes-c255a",
             storageBucket: "mdquizzes-c255a.firebasestorage.app",
@@ -467,10 +450,7 @@
             appId: "1:510171455812:web:dcead5207dc1272aa9b711"
         };
 
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
@@ -478,57 +458,104 @@
         const loginBtn = document.getElementById("gameLoginBtn");
         const profileBtn = document.getElementById("gameProfileBtn");
         const logoutBtn = document.getElementById("gameLogoutBtn");
-        const hudScore = document.getElementById("hudScoreVal");
-        const hudRank = document.getElementById("hudRankVal");
 
-        function executeGameLogout() {
+        function readSharedCookie() {
+            const match = document.cookie.match(new RegExp('(^| )cbsesir_user=([^;]+)'));
+            if (match) {
+                try { return JSON.parse(decodeURIComponent(match[2])); } catch (e) { return null; }
+            }
+            return null;
+        }
+
+        window.gameLogout = function() {
+            document.cookie = "cbsesir_user=; domain=.cbsesir.com; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
             auth.signOut().then(() => {
                 window.location.href = "https://cbsesir.com";
             });
+        };
+
+        function setLoggedInState(uid, name) {
+            if (loginBtn) loginBtn.style.display = "none";
+            if (profileBtn) profileBtn.style.display = "inline-flex";
+            if (logoutBtn) logoutBtn.style.display = "inline-flex";
+            if (userStatusEl) userStatusEl.innerHTML = 'Welcome, <b style="color:#ffd60a;">' + name + '</b> 👋';
+
+            // Realtime Game Scores listener for user
+            db.collection("gameProfiles").doc(uid).onSnapshot(doc => {
+                let data = doc.exists ? doc.data() : {};
+                const battle = data.battleScore || 0;
+                const roman = data.romanScore || 0;
+                const algebra = data.algebraScore || 0;
+                const totalGame = data.totalGameScore || (battle + roman + algebra);
+
+                document.getElementById("hudBattleScore").innerText = battle;
+                document.getElementById("hudRomanScore").innerText = roman;
+                document.getElementById("hudAlgebraScore").innerText = algebra;
+                document.getElementById("hudTotalGameScore").innerText = totalGame;
+
+                document.getElementById("cardBattleScore").innerText = battle;
+                document.getElementById("cardRomanScore").innerText = roman;
+                document.getElementById("cardAlgebraScore").innerText = algebra;
+
+                // Rank calculation
+                db.collection("gameProfiles").where("totalGameScore", ">", totalGame).get().then(snap => {
+                    document.getElementById("hudArenaRank").innerText = "#" + (snap.size + 1);
+                }).catch(() => {
+                    document.getElementById("hudArenaRank").innerText = "#1";
+                });
+            });
         }
 
-        // Realtime Auth & Profile Listener
+        function setGuestState() {
+            if (userStatusEl) userStatusEl.innerHTML = '👤 <span style="color:#94a3b8;">Guest Player</span>';
+            if (loginBtn) loginBtn.style.display = "inline-flex";
+            if (profileBtn) profileBtn.style.display = "none";
+            if (logoutBtn) logoutBtn.style.display = "none";
+        }
+
+        // 1. Live Arena Leaderboard (Realtime Top 5)
+        db.collection("gameProfiles").orderBy("totalGameScore", "desc").limit(5).onSnapshot(snap => {
+            const box = document.getElementById("arenaLeaderList");
+            if (snap.empty) {
+                box.innerHTML = "<div style='text-align:center; color:#94a3b8; padding:15px;'>No game champions recorded yet. Be the first!</div>";
+                return;
+            }
+            let html = "";
+            let r = 1;
+            snap.forEach(d => {
+                const u = d.data();
+                const name = u.name || "Gamer";
+                const pts = u.totalGameScore || 0;
+                const badge = r === 1 ? "🥇 " : r === 2 ? "🥈 " : r === 3 ? "🥉 " : `#${r} `;
+                html += `
+                    <div class="leader-row-game">
+                        <span><b>${badge}</b> ${name}</span>
+                        <b style="color:#ffd60a;">${pts} pts</b>
+                    </div>`;
+                r++;
+            });
+            box.innerHTML = html;
+        });
+
+        // 2. Cookie Instant Check
+        const session = readSharedCookie();
+        if (session && session.loggedIn) {
+            setLoggedInState(session.uid, session.name);
+        }
+
+        // 3. Auth Listener Fallback
         auth.onAuthStateChanged(user => {
             if (user) {
-                // Logged In: Show Profile & Logout, Hide Login
-                loginBtn.style.display = "none";
-                profileBtn.style.display = "inline-flex";
-                logoutBtn.style.display = "inline-flex";
-
-                // Live Sync with users collection
-                db.collection("users").doc(user.uid).onSnapshot(doc => {
-                    let name = "Student";
-                    let score = 0;
-
+                db.collection("users").doc(user.uid).get().then(doc => {
+                    let name = user.displayName || user.email.split('@')[0];
                     if (doc.exists) {
                         const d = doc.data();
-                        name = d.displayName || d.name || (d.firstName ? (d.firstName + " " + (d.lastName || "")).trim() : "");
-                        score = d.totalScore || d.points || 0;
+                        name = d.displayName || d.name || name;
                     }
-
-                    if (!name || name === "Student") {
-                        name = user.displayName || (user.email ? user.email.split('@')[0] : "Player");
-                    }
-
-                    userStatusEl.innerHTML = 'Welcome, <b>' + name + '</b> 👋';
-                    hudScore.innerText = score;
-
-                    // Compute Rank
-                    db.collection("users").where("totalScore", ">", score).get().then(snap => {
-                        hudRank.innerText = "#" + (snap.size + 1);
-                    }).catch(() => {
-                        hudRank.innerText = "#1";
-                    });
+                    setLoggedInState(user.uid, name);
                 });
-
-            } else {
-                // Logged Out / Guest Mode
-                userStatusEl.innerHTML = '👤 <span style="color:#94a3b8;">Guest Player</span>';
-                loginBtn.style.display = "inline-flex";
-                profileBtn.style.display = "none";
-                logoutBtn.style.display = "none";
-                hudScore.innerText = "0";
-                hudRank.innerText = "#--";
+            } else if (!session || !session.loggedIn) {
+                setGuestState();
             }
         });
     </script>
