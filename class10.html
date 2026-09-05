@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algebra Rapid Fire Matrix - MD Educational Games</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        :root {
+            --gold: #ffd60a;
+            --cyan: #38bdf8;
+            --green: #10b981;
+            --red: #ef4444;
+            --orange: #f97316;
+            --border-subtle: rgba(255, 255, 255, 0.1);
+            --border-orange: rgba(249, 115, 22, 0.35);
+        }
+
+        body {
+            background: radial-gradient(circle at center, #180928 0%, #030712 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        /* 1. TOP NAVBAR */
+        .game-nav {
+            background: rgba(3, 7, 18, 0.95);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--gold);
+            font-family: 'Outfit', sans-serif;
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .brand-tag {
+            background: rgba(249, 115, 22, 0.15);
+            border: 1px solid var(--border-orange);
+            color: var(--orange);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .nav-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .user-status-text { font-size: 13px; font-weight: 600; color: #cbd5e1; }
+        .user-status-text b { color: var(--gold); }
+
+        .btn-action {
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-game-dash { background: #10b981; color: #021a0f; }
+        .btn-game-dash:hover { background: #34d399; }
+
+        .btn-quiz-dash { background: #38bdf8; color: #00122e; }
+        .btn-quiz-dash:hover { background: #7dd3fc; }
+
+        .btn-login { background: var(--gold); color: #000; }
+        .btn-profile { background: #7c3aed; color: #fff; }
+        .btn-logout { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .btn-logout:hover { background: #ef4444; color: #fff; }
+
+        /* 2. MAIN LAYOUT */
+        .arena-wrapper {
+            max-width: 1220px;
+            margin: 18px auto 30px auto;
+            padding: 0 16px;
+            display: grid;
+            grid-template-columns: 1.65fr 1fr;
+            gap: 20px;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* 3. ALGEBRA ARENA */
+        .game-panel {
+            background: #0d111e;
+            border: 1px solid var(--border-orange);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .hud-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #070913;
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 12px;
+            font-size: 13.5px;
+        }
+        .hud-stats b { font-size: 17px; }
+
+        .timer-track {
+            width: 100%;
+            height: 8px;
+            background: #1f293d;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .timer-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, var(--green), var(--orange), var(--red));
+            transition: width 0.1s linear;
+        }
+
+        .question-card {
+            background: #050811;
+            border: 2px dashed rgba(249, 115, 22, 0.3);
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .algebra-expr {
+            font-family: 'Outfit', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--gold);
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 15px;
+        }
+
+        .opt-btn {
+            background: #131b2e;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 800;
+            padding: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .opt-btn:hover {
+            background: #1e2c4a;
+            border-color: var(--orange);
+            transform: translateY(-2px);
+        }
+
+        .opt-btn.correct { background: #059669 !important; border-color: #34d399 !important; }
+        .opt-btn.wrong { background: #dc2626 !important; border-color: #f87171 !important; }
+
+        .combo-tag {
+            background: linear-gradient(135deg, #ea580c, #c2410c);
+            color: white;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 999px;
+            display: none;
+        }
+
+        .game-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(3, 7, 18, 0.92);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border-radius: 20px;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .btn-play-trigger {
+            background: var(--orange);
+            color: #fff;
+            border: none;
+            padding: 13px 36px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(249, 115, 22, 0.4);
+            transition: 0.2s;
+        }
+        .btn-play-trigger:hover { background: #ea580c; transform: translateY(-2px); }
+
+        /* 4. LEADERBOARD PANEL */
+        .leaderboard-panel {
+            background: #0d111e;
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .leader-header {
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 15px;
+        }
+        .leader-header h2 { font-family: 'Outfit', sans-serif; font-size: 20px; color: var(--gold); }
+
+        .personal-card {
+            background: #050811;
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .lead-item {
+            background: #070913;
+            padding: 11px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13.5px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media(max-width: 850px) {
+            .arena-wrapper { grid-template-columns: 1fr; }
+            .game-nav { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 1. TOP NAVBAR -->
+    <nav class="game-nav">
+        <a href="https://game.cbsesir.com" class="brand-link">
+            <span>📐 MD QUIZZES</span>
+            <span class="brand-tag">Algebra Sprint</span>
+        </a>
+
+        <div class="nav-right-actions">
+            <span class="user-status-text" id="gameUserStatus">👤 Checking...</span>
+            
+            <a href="https://game.cbsesir.com" class="btn-action btn-game-dash">🎮 Back to Game Arena</a>
+            <a href="https://cbsesir.com" class="btn-action btn-quiz-dash">📊 Main Dashboard</a>
+
+            <a href="https://quiz.cbsesir.com/login.html" class="btn-action btn-login" id="gameLoginBtn">🔑 Login</a>
+            <a href="https://quiz.cbsesir.com/profile.html" class="btn-action btn-profile" id="gameProfileBtn" style="display:none;">👤 Profile</a>
+            <button class="btn-action btn-logout" id="gameLogoutBtn" onclick="gameLogout()" style="display:none;" type="button">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <!-- 2. GAME ARENA -->
+    <main class="arena-wrapper">
+
+        <!-- PLAY BOARD -->
+        <div class="game-panel">
+            <div class="hud-stats">
+                <div>⚡ Question: <b id="qIndex" style="color:var(--cyan);">0/15</b></div>
+                <div id="comboBadge" class="combo-tag">🔥 2X COMBO</div>
+                <div>⭐ Run Points: <b id="scoreVal" style="color:var(--gold);">0</b></div>
+            </div>
+
+            <!-- Pressure Bar -->
+            <div class="timer-track">
+                <div class="timer-fill" id="timerFill"></div>
+            </div>
+
+            <div class="question-card">
+                <div style="font-size: 13px; color: #94a3b8; text-transform: uppercase;">Solve for X:</div>
+                <div class="algebra-expr" id="algebraExpr">Ready?</div>
+            </div>
+
+            <div class="options-grid" id="optionsContainer">
+                <button class="opt-btn" disabled>-</button>
+                <button class="opt-btn" disabled>-</button>
+                <button class="opt-btn" disabled>-</button>
+                <button class="opt-btn" disabled>-</button>
+            </div>
+
+            <div class="game-overlay" id="startOverlay">
+                <div style="font-size: 46px; margin-bottom: 8px;">⚡</div>
+                <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:#fff; margin-bottom: 6px;">Algebra Rapid Fire Matrix</h2>
+                <p style="font-size: 13.5px; color:#94a3b8; max-width: 400px; margin-bottom: 20px;">
+                    Solve quadratic and polynomial roots before the pressure bar collapses. Fast answers trigger double combo points!
+                </p>
+                <button class="btn-play-trigger" onclick="startAlgebraGame()">▶ Start Challenge</button>
+            </div>
+        </div>
+
+        <!-- REALTIME LEADERBOARD -->
+        <div class="leaderboard-panel">
+            <div class="leader-header">
+                <h2>🏆 Algebra Champions</h2>
+                <span style="font-size: 12px; color: #94a3b8;">Realtime State High Scores</span>
+            </div>
+
+            <div class="personal-card">
+                <div style="font-size: 12px; color: #94a3b8; font-weight: 600;">YOUR BEST ALGEBRA SCORE</div>
+                <div style="font-size: 28px; font-weight: 900; color: var(--orange); margin-top: 4px;" id="userBestAlgebra">0 pts</div>
+            </div>
+
+            <div id="algebraChampionsList">
+                <div style="text-align: center; color: #94a3b8; padding: 20px;">Loading champions...</div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 3. GAME ENGINE & FIREBASE SYNC -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCODdCPvN4L96ye0YuxippaIUHnEUwnT90",
+            authDomain: "mdquizzes-c255a.firebaseapp.com",
+            projectId: "mdquizzes-c255a",
+            storageBucket: "mdquizzes-c255a.firebasestorage.app",
+            messagingSenderId: "510171455812",
+            appId: "1:510171455812:web:dcead5207dc1272aa9b711"
+        };
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const userStatusEl = document.getElementById("gameUserStatus");
+        const loginBtn = document.getElementById("gameLoginBtn");
+        const profileBtn = document.getElementById("gameProfileBtn");
+        const logoutBtn = document.getElementById("gameLogoutBtn");
+        const userBestDisplay = document.getElementById("userBestAlgebra");
+
+        function readSharedCookie() {
+            const match = document.cookie.match(new RegExp('(^| )cbsesir_user=([^;]+)'));
+            if (match) {
+                try { return JSON.parse(decodeURIComponent(match[2])); } catch (e) { return null; }
+            }
+            return null;
+        }
+
+        window.gameLogout = function() {
+            document.cookie = "cbsesir_user=; domain=.cbsesir.com; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+            auth.signOut().then(() => {
+                window.location.href = "https://cbsesir.com";
+            });
+        };
+
+        function setLoggedInState(uid, name) {
+            if (loginBtn) loginBtn.style.display = "none";
+            if (profileBtn) profileBtn.style.display = "inline-flex";
+            if (logoutBtn) logoutBtn.style.display = "inline-flex";
+            if (userStatusEl) userStatusEl.innerHTML = 'Welcome, <b style="color:#ffd60a;">' + name + '</b> 👋';
+
+            if (uid) {
+                db.collection("gameProfiles").doc(uid).onSnapshot(doc => {
+                    if (doc.exists) {
+                        const best = doc.data().algebraScore || 0;
+                        userBestDisplay.innerText = best + " pts";
+                    }
+                });
+            }
+        }
+
+        function setGuestState() {
+            if (userStatusEl) userStatusEl.innerHTML = '👤 <span style="color:#94a3b8;">Guest Player</span>';
+            if (loginBtn) loginBtn.style.display = "inline-flex";
+            if (profileBtn) profileBtn.style.display = "none";
+            if (logoutBtn) logoutBtn.style.display = "none";
+        }
+
+        // Live Realtime Algebra Leaderboard
+        db.collection("gameProfiles").orderBy("algebraScore", "desc").limit(5).onSnapshot(snap => {
+            const listEl = document.getElementById("algebraChampionsList");
+            if (snap.empty) {
+                listEl.innerHTML = "<div style='text-align:center; color:#94a3b8; padding:15px;'>No champion scores yet!</div>";
+                return;
+            }
+            let html = "";
+            let r = 1;
+            snap.forEach(d => {
+                const u = d.data();
+                const name = u.name || "Player";
+                const score = u.algebraScore || 0;
+                let badge = r === 1 ? "🥇 " : r === 2 ? "🥈 " : r === 3 ? "🥉 " : `#${r} `;
+                html += `
+                    <div class="lead-item">
+                        <span><b>${badge}</b> ${name}</span>
+                        <b style="color:var(--orange);">${score} pts</b>
+                    </div>`;
+                r++;
+            });
+            listEl.innerHTML = html;
+        });
+
+        const session = readSharedCookie();
+        if (session && session.loggedIn) {
+            setLoggedInState(session.uid, session.name);
+        }
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                db.collection("users").doc(user.uid).get().then(doc => {
+                    let name = user.displayName || user.email.split('@')[0];
+                    if (doc.exists) {
+                        const d = doc.data();
+                        name = d.displayName || d.name || name;
+                    }
+                    setLoggedInState(user.uid, name);
+                });
+            } else if (!session || !session.loggedIn) {
+                setGuestState();
+            }
+        });
+
+        /* ==========================================================
+           ALGEBRA GENERATOR & PRESSURE BAR ENGINE
+           ========================================================== */
+        let qCurrent = 0;
+        const totalQ = 15;
+        let gameScore = 0;
+        let comboStreak = 0;
+        let correctAnswer = 0;
+        let timerWidth = 100;
+        let pressureTimer = null;
+        let isAnswering = false;
+
+        const exprEl = document.getElementById("algebraExpr");
+        const optionsEl = document.getElementById("optionsContainer");
+        const fillEl = document.getElementById("timerFill");
+        const comboEl = document.getElementById("comboBadge");
+
+        function generateAlgebraQuestion() {
+            const types = ["linear", "quadratic_factor", "two_step"];
+            const t = types[Math.floor(Math.random() * types.length)];
+            let x = Math.floor(Math.random() * 12) + 1; // 1 to 12
+
+            if (t === "linear") {
+                const a = Math.floor(Math.random() * 5) + 2;
+                const b = Math.floor(Math.random() * 20) + 1;
+                const c = a * x + b;
+                exprEl.innerText = `${a}x + ${b} = ${c}`;
+                correctAnswer = x;
+            } else if (t === "two_step") {
+                const a = Math.floor(Math.random() * 6) + 2;
+                const b = Math.floor(Math.random() * 15) + 1;
+                const c = a * x - b;
+                exprEl.innerText = `${a}x - ${b} = ${c}`;
+                correctAnswer = x;
+            } else {
+                const r2 = Math.floor(Math.random() * 8) + 1;
+                const sum = x + r2;
+                const prod = x * r2;
+                exprEl.innerText = `x² - ${sum}x + ${prod} = 0`;
+                correctAnswer = x;
+            }
+
+            // Generate options with tricky distractors
+            let opts = [correctAnswer];
+            while (opts.length < 4) {
+                let fake = correctAnswer + (Math.floor(Math.random() * 7) - 3);
+                if (fake > 0 && !opts.includes(fake)) opts.push(fake);
+            }
+            opts.sort(() => Math.random() - 0.5);
+
+            optionsEl.innerHTML = "";
+            opts.forEach(val => {
+                const btn = document.createElement("button");
+                btn.className = "opt-btn";
+                btn.innerText = `x = ${val}`;
+                btn.onclick = () => selectAnswer(btn, val);
+                optionsEl.appendChild(btn);
+            });
+        }
+
+        function startAlgebraGame() {
+            document.getElementById("startOverlay").style.display = "none";
+            qCurrent = 0;
+            gameScore = 0;
+            comboStreak = 0;
+            document.getElementById("scoreVal").innerText = gameScore;
+            comboEl.style.display = "none";
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            if (qCurrent >= totalQ) {
+                endAlgebraGame();
+                return;
+            }
+
+            qCurrent++;
+            document.getElementById("qIndex").innerText = `${qCurrent}/${totalQ}`;
+            isAnswering = true;
+            generateAlgebraQuestion();
+
+            // Reset Pressure Bar
+            clearInterval(pressureTimer);
+            timerWidth = 100;
+            fillEl.style.width = "100%";
+
+            pressureTimer = setInterval(() => {
+                timerWidth -= 1.6; // ~6 seconds per question
+                fillEl.style.width = `${Math.max(0, timerWidth)}%`;
+
+                if (timerWidth <= 0) {
+                    clearInterval(pressureTimer);
+                    handleTimeout();
+                }
+            }, 100);
+        }
+
+        function selectAnswer(btn, val) {
+            if (!isAnswering) return;
+            isAnswering = false;
+            clearInterval(pressureTimer);
+
+            if (val === correctAnswer) {
+                btn.classList.add("correct");
+                comboStreak++;
+                let mult = comboStreak >= 4 ? 3 : (comboStreak >= 2 ? 2 : 1);
+                
+                if (mult > 1) {
+                    comboEl.style.display = "inline-block";
+                    comboEl.innerText = `🔥 ${mult}X COMBO`;
+                }
+
+                // Speed bonus points
+                const bonus = Math.round(timerWidth / 10);
+                gameScore += (15 + bonus) * mult;
+                document.getElementById("scoreVal").innerText = gameScore;
+
+                setTimeout(nextQuestion, 500);
+            } else {
+                btn.classList.add("wrong");
+                comboStreak = 0;
+                comboEl.style.display = "none";
+                
+                // Show right answer
+                document.querySelectorAll(".opt-btn").forEach(b => {
+                    if (b.innerText === `x = ${correctAnswer}`) b.classList.add("correct");
+                });
+
+                setTimeout(nextQuestion, 800);
+            }
+        }
+
+        function handleTimeout() {
+            isAnswering = false;
+            comboStreak = 0;
+            comboEl.style.display = "none";
+            
+            document.querySelectorAll(".opt-btn").forEach(b => {
+                if (b.innerText === `x = ${correctAnswer}`) b.classList.add("correct");
+            });
+
+            setTimeout(nextQuestion, 800);
+        }
+
+        /* ==========================================================
+           FIREBASE TRIPLE SYNC
+           ========================================================== */
+        async function endAlgebraGame() {
+            clearInterval(pressureTimer);
+            const overlay = document.getElementById("startOverlay");
+            overlay.style.display = "flex";
+            overlay.innerHTML = `
+                <div style="font-size: 44px; margin-bottom: 6px;">🏁</div>
+                <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--gold);">Matrix Conquered!</h2>
+                <p style="font-size: 15px; color:#fff; margin: 8px 0 16px 0;">
+                    You scored <b style="color:var(--orange); font-size:24px;">+${gameScore}</b> pts!
+                </p>
+                <button class="btn-play-trigger" onclick="startAlgebraGame()">🔄 Play Again</button>
+            `;
+
+            if (gameScore <= 0) return;
+
+            const cookieData = readSharedCookie();
+            const currentUid = (auth.currentUser && auth.currentUser.uid) || (cookieData ? cookieData.uid : null);
+            const studentName = (auth.currentUser && auth.currentUser.displayName) || (cookieData ? cookieData.name : "Student");
+
+            if (!currentUid) {
+                alert(`Game Over! Scored ${gameScore} points. Please login to record points!`);
+                return;
+            }
+
+            try {
+                // 1. Update Game Profile (Individual Best + Game Total)
+                await db.collection("gameProfiles").doc(currentUid).set({
+                    uid: currentUid,
+                    name: studentName,
+                    algebraScore: firebase.firestore.FieldValue.increment(gameScore),
+                    totalGameScore: firebase.firestore.FieldValue.increment(gameScore),
+                    lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                // 2. Direct Sync to cbsesir.com Main Portal User Collection
+                await db.collection("users").doc(currentUid).set({
+                    totalScore: firebase.firestore.FieldValue.increment(gameScore)
+                }, { merge: true });
+
+                const cur = parseInt(userBestDisplay.innerText) || 0;
+                userBestDisplay.innerText = `${cur + gameScore} pts`;
+
+            } catch (err) {
+                console.error("Firestore sync error:", err);
+            }
+        }
+    </script>
+</body>
+</html>
