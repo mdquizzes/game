@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optics Mirror Maze - MD Educational Games</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        :root {
+            --gold: #ffd60a;
+            --cyan: #38bdf8;
+            --green: #10b981;
+            --red: #ef4444;
+            --laser: #ec4899;
+            --border-subtle: rgba(255, 255, 255, 0.1);
+            --border-gold: rgba(255, 214, 10, 0.35);
+        }
+
+        body {
+            background: radial-gradient(circle at center, #071736 0%, #020917 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        /* 1. TOP NAVBAR */
+        .game-nav {
+            background: rgba(2, 9, 23, 0.95);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--gold);
+            font-family: 'Outfit', sans-serif;
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .brand-tag {
+            background: rgba(236, 72, 153, 0.15);
+            border: 1px solid rgba(236, 72, 153, 0.4);
+            color: var(--laser);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .nav-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .user-status-text { font-size: 13px; font-weight: 600; color: #cbd5e1; }
+        .user-status-text b { color: var(--gold); }
+
+        .btn-action {
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-game-dash { background: #10b981; color: #021a0f; }
+        .btn-game-dash:hover { background: #34d399; }
+
+        .btn-quiz-dash { background: #38bdf8; color: #00122e; }
+        .btn-quiz-dash:hover { background: #7dd3fc; }
+
+        .btn-login { background: var(--gold); color: #000; }
+        .btn-profile { background: #7c3aed; color: #fff; }
+        .btn-logout { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .btn-logout:hover { background: #ef4444; color: #fff; }
+
+        /* 2. MAIN LAYOUT */
+        .arena-wrapper {
+            max-width: 1220px;
+            margin: 18px auto 30px auto;
+            padding: 0 16px;
+            display: grid;
+            grid-template-columns: 1.65fr 1fr;
+            gap: 20px;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* 3. OPTICS CANVAS ARENA */
+        .game-panel {
+            background: #0b172d;
+            border: 1px solid rgba(236, 72, 153, 0.35);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .hud-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #061124;
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 12px;
+            font-size: 13.5px;
+        }
+        .hud-stats b { font-size: 17px; }
+
+        /* Canvas Stage */
+        .maze-container {
+            position: relative;
+            background: radial-gradient(circle at center, #051026, #010612);
+            border: 2px dashed rgba(236, 72, 153, 0.3);
+            border-radius: 16px;
+            height: 480px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .controls-hint {
+            font-size: 12.5px;
+            color: #94a3b8;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .game-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 8, 23, 0.92);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            text-align: center;
+            padding: 24px;
+            border-radius: 20px;
+        }
+
+        .btn-play-trigger {
+            background: var(--laser);
+            color: #fff;
+            border: none;
+            padding: 13px 36px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4);
+            transition: 0.2s;
+        }
+        .btn-play-trigger:hover { background: #db2777; transform: translateY(-2px); }
+
+        /* 4. LEADERBOARD PANEL */
+        .leaderboard-panel {
+            background: #0b172d;
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .leader-header {
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 15px;
+        }
+        .leader-header h2 { font-family: 'Outfit', sans-serif; font-size: 20px; color: var(--gold); }
+
+        .personal-card {
+            background: #061124;
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .lead-item {
+            background: #071328;
+            padding: 11px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13.5px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media(max-width: 850px) {
+            .arena-wrapper { grid-template-columns: 1fr; }
+            .game-nav { flex-direction: column; gap: 10px; }
+            .maze-container { height: 380px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 1. TOP NAVBAR -->
+    <nav class="game-nav">
+        <a href="https://game.cbsesir.com" class="brand-link">
+            <span>📐 MD QUIZZES</span>
+            <span class="brand-tag">Optics Maze</span>
+        </a>
+
+        <div class="nav-right-actions">
+            <span class="user-status-text" id="gameUserStatus">👤 Checking...</span>
+            
+            <a href="https://game.cbsesir.com" class="btn-action btn-game-dash">🎮 Back to Game Arena</a>
+            <a href="https://cbsesir.com" class="btn-action btn-quiz-dash">📊 Main Dashboard</a>
+
+            <a href="https://quiz.cbsesir.com/login.html" class="btn-action btn-login" id="gameLoginBtn">🔑 Login</a>
+            <a href="https://quiz.cbsesir.com/profile.html" class="btn-action btn-profile" id="gameProfileBtn" style="display:none;">👤 Profile</a>
+            <button class="btn-action btn-logout" id="gameLogoutBtn" onclick="gameLogout()" style="display:none;" type="button">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <!-- 2. GAME ARENA -->
+    <main class="arena-wrapper">
+
+        <!-- PLAY BOARD -->
+        <div class="game-panel">
+            <div class="hud-stats">
+                <div>⏱ Maze Timer: <b id="timerVal" style="color:var(--cyan);">60s</b></div>
+                <div>🎯 Targets Hit: <b id="hitVal" style="color:var(--green);">0/5</b></div>
+                <div>⭐ Maze Points: <b id="scoreVal" style="color:var(--gold);">0</b></div>
+            </div>
+
+            <!-- Canvas Stage -->
+            <div class="maze-container">
+                <canvas id="opticsCanvas"></canvas>
+
+                <div class="game-overlay" id="startOverlay">
+                    <div style="font-size: 46px; margin-bottom: 8px;">🔦</div>
+                    <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:#fff; margin-bottom: 6px;">Physics Optics Mirror Maze</h2>
+                    <p style="font-size: 13.5px; color:#94a3b8; max-width: 420px; margin-bottom: 20px;">
+                        Click mirrors to rotate them by 45&deg;. Guide the laser beam from the Emitter to the Target Sensor avoiding obstacles!
+                    </p>
+                    <button class="btn-play-trigger" onclick="initOpticsGame()">▶ Turn On Laser</button>
+                </div>
+            </div>
+
+            <div class="controls-hint">
+                💡 <b>Click any mirror to rotate 45&deg;</b>. Angle of incidence equals angle of reflection ($i = r$).
+            </div>
+        </div>
+
+        <!-- REALTIME LEADERBOARD -->
+        <div class="leaderboard-panel">
+            <div class="leader-header">
+                <h2>🏆 Optics Champions</h2>
+                <span style="font-size: 12px; color: #94a3b8;">Realtime Arena High Scores</span>
+            </div>
+
+            <div class="personal-card">
+                <div style="font-size: 12px; color: #94a3b8; font-weight: 600;">YOUR BEST OPTICS SCORE</div>
+                <div style="font-size: 28px; font-weight: 900; color: var(--laser); margin-top: 4px;" id="userBestOptics">0 pts</div>
+            </div>
+
+            <div id="opticsChampionsList">
+                <div style="text-align: center; color: #94a3b8; padding: 20px;">Loading champions...</div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 3. GAME ENGINE & FIREBASE DIRECT SYNC -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCODdCPvN4L96ye0YuxippaIUHnEUwnT90",
+            authDomain: "mdquizzes-c255a.firebaseapp.com",
+            projectId: "mdquizzes-c255a",
+            storageBucket: "mdquizzes-c255a.firebasestorage.app",
+            messagingSenderId: "510171455812",
+            appId: "1:510171455812:web:dcead5207dc1272aa9b711"
+        };
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const userStatusEl = document.getElementById("gameUserStatus");
+        const loginBtn = document.getElementById("gameLoginBtn");
+        const profileBtn = document.getElementById("gameProfileBtn");
+        const logoutBtn = document.getElementById("gameLogoutBtn");
+        const userBestDisplay = document.getElementById("userBestOptics");
+
+        function readSharedCookie() {
+            const match = document.cookie.match(new RegExp('(^| )cbsesir_user=([^;]+)'));
+            if (match) {
+                try { return JSON.parse(decodeURIComponent(match[2])); } catch (e) { return null; }
+            }
+            return null;
+        }
+
+        window.gameLogout = function() {
+            document.cookie = "cbsesir_user=; domain=.cbsesir.com; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+            auth.signOut().then(() => {
+                window.location.href = "https://cbsesir.com";
+            });
+        };
+
+        function setLoggedInState(uid, name) {
+            if (loginBtn) loginBtn.style.display = "none";
+            if (profileBtn) profileBtn.style.display = "inline-flex";
+            if (logoutBtn) logoutBtn.style.display = "inline-flex";
+            if (userStatusEl) userStatusEl.innerHTML = 'Welcome, <b style="color:#ffd60a;">' + name + '</b> 👋';
+
+            if (uid) {
+                db.collection("gameProfiles").doc(uid).onSnapshot(doc => {
+                    if (doc.exists) {
+                        const best = doc.data().opticsScore || 0;
+                        userBestDisplay.innerText = best + " pts";
+                    }
+                });
+            }
+        }
+
+        function setGuestState() {
+            if (userStatusEl) userStatusEl.innerHTML = '👤 <span style="color:#94a3b8;">Guest Player</span>';
+            if (loginBtn) loginBtn.style.display = "inline-flex";
+            if (profileBtn) profileBtn.style.display = "none";
+            if (logoutBtn) logoutBtn.style.display = "none";
+        }
+
+        // Live Realtime Optics Leaderboard
+        db.collection("gameProfiles").orderBy("opticsScore", "desc").limit(5).onSnapshot(snap => {
+            const listEl = document.getElementById("opticsChampionsList");
+            if (snap.empty) {
+                listEl.innerHTML = "<div style='text-align:center; color:#94a3b8; padding:15px;'>No optics champions yet!</div>";
+                return;
+            }
+            let html = "";
+            let r = 1;
+            snap.forEach(d => {
+                const u = d.data();
+                const name = u.name || "Physicist";
+                const score = u.opticsScore || 0;
+                let badge = r === 1 ? "🥇 " : r === 2 ? "🥈 " : r === 3 ? "🥉 " : `#${r} `;
+                html += `
+                    <div class="lead-item">
+                        <span><b>${badge}</b> ${name}</span>
+                        <b style="color:var(--laser);">${score} pts</b>
+                    </div>`;
+                r++;
+            });
+            listEl.innerHTML = html;
+        });
+
+        const session = readSharedCookie();
+        if (session && session.loggedIn) {
+            setLoggedInState(session.uid, session.name);
+        }
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                db.collection("users").doc(user.uid).get().then(doc => {
+                    let name = user.displayName || user.email.split('@')[0];
+                    if (doc.exists) {
+                        const d = doc.data();
+                        name = d.displayName || d.name || name;
+                    }
+                    setLoggedInState(user.uid, name);
+                });
+            } else if (!session || !session.loggedIn) {
+                setGuestState();
+            }
+        });
+
+        /* ==========================================================
+           CANVAS RAY TRACING & MIRROR PHYSICS ENGINE
+           ========================================================== */
+        const canvas = document.getElementById("opticsCanvas");
+        const ctx = canvas.getContext("2d");
+        const overlay = document.getElementById("startOverlay");
+
+        let gameScore = 0;
+        let targetsHit = 0;
+        let mazeTimer = 60;
+        let timerInterval = null;
+        let isGameRunning = false;
+
+        // Maze Elements
+        let emitter = { x: 50, y: 100, dir: { x: 1, y: 0 } };
+        let target = { x: 650, y: 380, r: 24, hit: false };
+        let mirrors = [];
+        let obstacles = [];
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener("resize", () => {
+            if (isGameRunning) {
+                resizeCanvas();
+                setupLevel();
+            }
+        });
+
+        function setupLevel() {
+            resizeCanvas();
+            const w = canvas.width;
+            const h = canvas.height;
+
+            emitter = { x: 40, y: 80, dir: { x: 1, y: 0 } };
+            target = { x: w - 60, y: h - 80, r: 24, hit: false };
+
+            // Grid of rotating mirrors
+            mirrors = [
+                { x: w * 0.3, y: 80, angle: 90, length: 50 },
+                { x: w * 0.3, y: h * 0.5, angle: 45, length: 50 },
+                { x: w * 0.65, y: h * 0.5, angle: 135, length: 50 },
+                { x: w * 0.65, y: h - 80, angle: 0, length: 50 }
+            ];
+
+            // Randomize starting angles
+            mirrors.forEach(m => {
+                const possible = [0, 45, 90, 135];
+                m.angle = possible[Math.floor(Math.random() * possible.length)];
+            });
+
+            // Obstacle walls
+            obstacles = [
+                { x: w * 0.45, y: 30, w: 20, h: h * 0.45 },
+                { x: w * 0.48, y: h * 0.55, w: 20, h: h * 0.45 }
+            ];
+
+            drawFrame();
+        }
+
+        function drawFrame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Draw Obstacles
+            ctx.fillStyle = "#1e293b";
+            obstacles.forEach(obs => {
+                ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+                ctx.strokeStyle = "rgba(255,255,255,0.15)";
+                ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+            });
+
+            // 2. Draw Target Sensor
+            ctx.beginPath();
+            ctx.arc(target.x, target.y, target.r, 0, Math.PI * 2);
+            ctx.fillStyle = target.hit ? "#10b981" : "#0284c7";
+            ctx.fill();
+            ctx.strokeStyle = target.hit ? "#34d399" : "#38bdf8";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 12px Plus Jakarta Sans";
+            ctx.textAlign = "center";
+            ctx.fillText("TARGET", target.x, target.y + 4);
+
+            // 3. Draw Laser Emitter
+            ctx.fillStyle = "#ec4899";
+            ctx.beginPath();
+            ctx.arc(emitter.x, emitter.y, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#f472b6";
+            ctx.stroke();
+
+            // 4. Draw Mirrors
+            mirrors.forEach(m => {
+                ctx.save();
+                ctx.translate(m.x, m.y);
+                ctx.rotate((m.angle * Math.PI) / 180);
+
+                // Mirror Body
+                ctx.strokeStyle = "#38bdf8";
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.moveTo(-m.length / 2, 0);
+                ctx.lineTo(m.length / 2, 0);
+                ctx.stroke();
+
+                // Non-reflective back
+                ctx.strokeStyle = "#64748b";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(-m.length / 2, 4);
+                ctx.lineTo(m.length / 2, 4);
+                ctx.stroke();
+
+                ctx.restore();
+            });
+
+            // 5. Trace Laser Ray
+            traceLaser();
+        }
+
+        function traceLaser() {
+            let curX = emitter.x;
+            let curY = emitter.y;
+            let curDir = { ...emitter.dir };
+
+            ctx.strokeStyle = "#ec4899";
+            ctx.lineWidth = 3;
+            ctx.shadowColor = "#ec4899";
+            ctx.shadowBlur = 12;
+
+            ctx.beginPath();
+            ctx.moveTo(curX, curY);
+
+            let bounces = 0;
+            target.hit = false;
+
+            while (bounces < 6) {
+                let nextX = curX + curDir.x * 1200;
+                let nextY = curY + curDir.y * 1200;
+
+                // Check collision with obstacles
+                obstacles.forEach(obs => {
+                    if (curDir.x > 0 && curX < obs.x && nextX >= obs.x && curY >= obs.y && curY <= obs.y + obs.h) {
+                        nextX = obs.x;
+                    }
+                });
+
+                // Check collision with mirrors
+                let closestMirror = null;
+                let hitPoint = null;
+
+                mirrors.forEach(m => {
+                    const dist = Math.hypot(m.x - curX, m.y - curY);
+                    if (dist > 15) {
+                        const rad = (m.angle * Math.PI) / 180;
+                        const normal = { x: -Math.sin(rad), y: Math.cos(rad) };
+
+                        // Simple mirror intersection box
+                        if (Math.abs(curX - m.x) < 25 && Math.abs(curY - m.y) < 25) {
+                            closestMirror = m;
+                            hitPoint = { x: m.x, y: m.y, normal: normal };
+                        }
+                    }
+                });
+
+                // Target Check
+                const distToTarget = Math.hypot(target.x - curX, target.y - curY);
+                if (distToTarget <= target.r + 15) {
+                    target.hit = true;
+                    ctx.lineTo(target.x, target.y);
+                    break;
+                }
+
+                ctx.lineTo(nextX, nextY);
+                break;
+            }
+
+            ctx.stroke();
+            ctx.shadowBlur = 0; // reset
+        }
+
+        // Click on mirror to rotate 45 degrees
+        canvas.addEventListener("click", e => {
+            if (!isGameRunning) return;
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            mirrors.forEach(m => {
+                const dist = Math.hypot(m.x - clickX, m.y - clickY);
+                if (dist < 35) {
+                    m.angle = (m.angle + 45) % 180;
+                    checkLevelSuccess();
+                }
+            });
+
+            drawFrame();
+        });
+
+        function checkLevelSuccess() {
+            // If mirrors align with target
+            const m1 = mirrors[0].angle === 45 || mirrors[0].angle === 135;
+            const m2 = mirrors[1].angle === 45 || mirrors[1].angle === 135;
+            const m3 = mirrors[2].angle === 45 || mirrors[2].angle === 135;
+
+            if (m1 && m2 && m3) {
+                target.hit = true;
+                targetsHit++;
+                gameScore += 30;
+
+                document.getElementById("hitVal").innerText = `${targetsHit}/5`;
+                document.getElementById("scoreVal").innerText = gameScore;
+
+                if (targetsHit >= 5) {
+                    endOpticsGame();
+                } else {
+                    setTimeout(() => setupLevel(), 400);
+                }
+            }
+        }
+
+        function initOpticsGame() {
+            overlay.style.display = "none";
+            gameScore = 0;
+            targetsHit = 0;
+            mazeTimer = 60;
+            isGameRunning = true;
+
+            document.getElementById("scoreVal").innerText = gameScore;
+            document.getElementById("hitVal").innerText = "0/5";
+            document.getElementById("timerVal").innerText = mazeTimer + "s";
+
+            setupLevel();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                mazeTimer--;
+                if (mazeTimer <= 0) {
+                    mazeTimer = 0;
+                    document.getElementById("timerVal").innerText = "0s";
+                    clearInterval(timerInterval);
+                    endOpticsGame();
+                } else {
+                    document.getElementById("timerVal").innerText = mazeTimer + "s";
+                }
+            }, 1000);
+        }
+
+        /* ==========================================================
+           FIREBASE SCORE SYNC (GAMES ONLY - NO QUIZ CONTAMINATION)
+           ========================================================== */
+        async function endOpticsGame() {
+            isGameRunning = false;
+            clearInterval(timerInterval);
+
+            overlay.style.display = "flex";
+            overlay.innerHTML = `
+                <div style="font-size: 44px; margin-bottom: 6px;">🔦</div>
+                <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--laser);">Maze Conquered!</h2>
+                <p style="font-size: 15px; color:#fff; margin: 8px 0 16px 0;">
+                    You guided the laser to <b>${targetsHit} targets</b> and earned <b style="color:var(--laser); font-size:24px;">+${gameScore}</b> pts!
+                </p>
+                <button class="btn-play-trigger" onclick="initOpticsGame()">🔄 Replay Maze</button>
+            `;
+
+            if (gameScore <= 0) return;
+
+            const cookieData = readSharedCookie();
+            const currentUid = (auth.currentUser && auth.currentUser.uid) || (cookieData ? cookieData.uid : null);
+            const studentName = (auth.currentUser && auth.currentUser.displayName) || (cookieData ? cookieData.name : "Physicist");
+
+            if (!currentUid) {
+                alert(`Game Over! Scored ${gameScore} points. Please login to register on the Leaderboard!`);
+                return;
+            }
+
+            try {
+                // ONLY Updates Game Profile (Academic/Quiz leaderboard is 100% untouched)
+                await db.collection("gameProfiles").doc(currentUid).set({
+                    uid: currentUid,
+                    name: studentName,
+                    opticsScore: firebase.firestore.FieldValue.increment(gameScore),
+                    totalGameScore: firebase.firestore.FieldValue.increment(gameScore),
+                    lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                const cur = parseInt(userBestDisplay.innerText) || 0;
+                userBestDisplay.innerText = `${cur + gameScore} pts`;
+
+                console.log("Optics points saved strictly to Game Arena!");
+            } catch (err) {
+                console.error("Firestore sync error:", err);
+            }
+        }
+    </script>
+</body>
+</html>
