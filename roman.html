@@ -191,6 +191,7 @@
             overflow: hidden;
             margin-bottom: 14px;
             width: 100%;
+            cursor: default;
         }
 
         .bubble-stage.shake-error {
@@ -259,7 +260,7 @@
             box-shadow: 0 0 20px rgba(245, 158, 11, 0.6), inset 0 0 10px #ffffff;
         }
 
-        /* Floating Score Text Effect */
+        /* Floating Score Text */
         .floating-pts {
             position: absolute;
             font-family: 'Outfit', sans-serif;
@@ -456,7 +457,7 @@
         </div>
     </nav>
 
-    <!-- 2. GAME ARENA (RESPONSIVE GRID) -->
+    <!-- 2. GAME ARENA -->
     <main class="arena-wrapper">
 
         <!-- PRIMARY GAME PANEL -->
@@ -469,13 +470,14 @@
                 <div>⭐ Points: <b id="scoreVal" style="color:var(--gold);">0</b></div>
             </div>
 
-            <div class="bubble-stage" id="bubbleStage">
+            <!-- BUBBLE STAGE WITH DESELECT ON SIDE CLICK -->
+            <div class="bubble-stage" id="bubbleStage" onclick="onStageClick(event)">
                 <!-- START & DIFFICULTY OVERLAY -->
-                <div class="bubble-overlay" id="startOverlay">
+                <div class="bubble-overlay" id="startOverlay" onclick="event.stopPropagation()">
                     <div style="font-size: 46px; margin-bottom: 6px;">🫧</div>
                     <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--primary-blue); margin-bottom: 6px; font-weight: 900;">Roman Bubble Frenzy Pro</h2>
                     <p style="font-size: 13.5px; color:var(--text-muted); max-width: 440px; margin-bottom: 12px; line-height: 1.6;">
-                        Pop matching <b style="color:var(--accent-blue);">Blue Roman</b> &amp; <b style="color:var(--green);">Green Hindu</b> pairs (<b>+2 pts</b>)! Mismatched bubbles float safely to the top without breaking!
+                        Pop matching <b style="color:var(--accent-blue);">Blue Roman</b> &amp; <b style="color:var(--green);">Green Hindu</b> pairs (<b>+2 pts</b>)! Tap anywhere on empty screen to deselect your choice.
                     </p>
 
                     <div style="font-size: 12px; font-weight: 800; color:var(--text-dark); text-transform: uppercase; margin-bottom: 6px;">Select Difficulty:</div>
@@ -494,7 +496,7 @@
             </div>
         </div>
 
-        <!-- REALTIME LEADERBOARD (Desktop Right, Mobile Bottom) -->
+        <!-- REALTIME LEADERBOARD -->
         <div class="leaderboard-panel">
             <div class="leader-header">
                 <h2>🏆 Roman Champions</h2>
@@ -743,7 +745,6 @@
             }
         }
 
-        // Initialize default pool
         buildPool(20);
 
         let gameTimer = 45;
@@ -759,11 +760,22 @@
         const overlay = document.getElementById("startOverlay");
         const comboEl = document.getElementById("comboBadge");
 
+        // SIDE / EMPTY SCREEN TAP EVENT: DESELECT BUBBLE INSTANTLY
+        function onStageClick(e) {
+            if (!isGameRunning) return;
+            // Agar click seedha stage par hua ho (kisi bubble par nahi)
+            if (e.target === stage || e.target.id === "bubbleStage") {
+                if (selectedBubble) {
+                    selectedBubble.classList.remove("selected");
+                    selectedBubble = null;
+                }
+            }
+        }
+
         function initBubbleGame() {
             overlay.style.display = "none";
             document.querySelectorAll(".bubble").forEach(b => b.remove());
 
-            // Re-verify pool for selected level
             if (selectedLevel === 'easy') buildPool(20);
             else if (selectedLevel === 'medium') buildPool(50);
             else buildPool(100);
@@ -864,7 +876,6 @@
                 bubble.style.left = curLeft + "px";
                 bubble.style.top = posY + "px";
 
-                // Upar jaakar bina tute natural disappear
                 if (posY <= -90) {
                     clearInterval(floatInterval);
                     if (selectedBubble === bubble) selectedBubble = null;
@@ -872,7 +883,10 @@
                 }
             }, 25);
 
-            bubble.onclick = () => onBubbleClick(bubble);
+            bubble.onclick = (e) => {
+                e.stopPropagation(); // Stage click hone se roke
+                onBubbleClick(bubble);
+            };
             stage.appendChild(bubble);
         }
 
@@ -918,7 +932,7 @@
                 return;
             }
 
-            // DECOY CLICK (Penalty lagti hai par bubble break nahi hota, unselect hota hai)
+            // DECOY CLICK
             if (bubble.dataset.isDecoy === "true") {
                 AudioFX.playWrong();
                 triggerWrongPenalty();
@@ -952,7 +966,6 @@
                     comboEl.innerText = `🔥 ${multiplier}X COMBO`;
                 }
 
-                // 2 POINTS PER MATCH (multiplier ke sath)
                 const earnedPoints = 2 * multiplier;
                 gameScore += earnedPoints;
                 matchesCount++;
@@ -965,7 +978,6 @@
                 showFloatingScore(`+${earnedPoints}`, rect.left - sRect.left, rect.top - sRect.top);
                 triggerSparkles(rect.left - sRect.left + 35, rect.top - sRect.top + 35);
 
-                // Right pair pop animation
                 bubble.style.transform = "scale(1.35)";
                 selectedBubble.style.transform = "scale(1.35)";
                 bubble.style.opacity = "0";
@@ -977,7 +989,7 @@
 
                 selectedBubble = null;
             } else {
-                // MISMATCH: BUBBLE DESTROY/BREAK NAHI HOGA, BAS UNSELECT & PENALTY
+                // MISMATCH: Bubble burst nahi hoga, bas unselect hoga
                 AudioFX.playWrong();
                 triggerWrongPenalty();
             }
@@ -1037,7 +1049,6 @@
             }
 
             try {
-                // 1. Update Game Profile (Individual Roman score)
                 await db.collection("gameProfiles").doc(currentUid).set({
                     uid: currentUid,
                     name: studentName,
@@ -1046,15 +1057,12 @@
                     lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
 
-                // 2. Sync to Main Portal User Collection
                 await db.collection("users").doc(currentUid).set({
                     totalScore: firebase.firestore.FieldValue.increment(gameScore)
                 }, { merge: true });
 
-                // 3. Local cookie update
                 updateSharedCookiePoints(gameScore);
 
-                // 4. Update UI
                 const currentDisplay = parseInt(userBestDisplay.innerText) || 0;
                 userBestDisplay.innerText = (currentDisplay + gameScore) + " pts";
 
