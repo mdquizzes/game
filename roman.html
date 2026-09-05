@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roman Bubble Frenzy - MD Educational Games</title>
+    <title>Roman Bubble Frenzy Pro - MD Educational Games</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
@@ -16,36 +16,46 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         
         :root {
-            --gold: #ffd60a;
-            --cyan: #38bdf8;
-            --green: #10b981;
-            --red: #ef4444;
-            --border-subtle: rgba(255, 255, 255, 0.1);
-            --border-gold: rgba(255, 214, 10, 0.35);
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --primary-blue: #0b4bc1;
+            --accent-blue: #155eef;
+            --soft-blue: #eff6ff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-light: #e2e8f0;
+            --gold: #d97706;
+            --gold-light: #fef3c7;
+            --green: #16a34a;
+            --green-light: #dcfce7;
+            --red: #dc2626;
+            --red-light: #fee2e2;
+            --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.06);
         }
 
         body {
-            background: radial-gradient(circle at center, #0a1b38 0%, #020917 100%);
+            background: var(--bg-main);
             min-height: 100vh;
-            color: #f8fafc;
+            color: var(--text-dark);
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
             user-select: none;
+            -webkit-user-select: none;
         }
 
-        /* 1. TOP NAVBAR WITH DIRECT BRIDGES */
+        /* 1. TOP NAVBAR (WHITE THEME) */
         .game-nav {
-            background: rgba(2, 9, 23, 0.95);
-            backdrop-filter: blur(14px);
-            border-bottom: 1px solid var(--border-subtle);
-            padding: 10px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-light);
+            padding: 12px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
             z-index: 1000;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
         }
 
         .brand-link {
@@ -53,20 +63,20 @@
             align-items: center;
             gap: 10px;
             text-decoration: none;
-            color: var(--gold);
+            color: var(--primary-blue);
             font-family: 'Outfit', sans-serif;
-            font-size: 19px;
-            font-weight: 800;
+            font-size: 20px;
+            font-weight: 900;
         }
 
         .brand-tag {
-            background: rgba(255, 214, 10, 0.15);
-            border: 1px solid rgba(255, 214, 10, 0.3);
-            color: var(--gold);
+            background: var(--soft-blue);
+            border: 1px solid #bfdbfe;
+            color: var(--accent-blue);
             font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-weight: 800;
             text-transform: uppercase;
         }
 
@@ -77,53 +87,53 @@
             flex-wrap: wrap;
         }
 
-        .user-status-text { font-size: 13px; font-weight: 600; color: #cbd5e1; }
-        .user-status-text b { color: var(--gold); }
+        .user-status-text { font-size: 13.5px; font-weight: 700; color: var(--text-dark); }
+        .user-status-text b { color: var(--primary-blue); }
 
         .btn-action {
-            padding: 7px 14px;
+            padding: 8px 15px;
             border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
+            font-size: 12.5px;
+            font-weight: 800;
             text-decoration: none;
             border: none;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             transition: all 0.2s ease;
         }
 
-        .btn-game-dash { background: #10b981; color: #021a0f; }
-        .btn-game-dash:hover { background: #34d399; transform: translateY(-1px); }
+        .btn-game-dash { background: var(--green-light); color: var(--green); border: 1px solid #bbf7d0; }
+        .btn-game-dash:hover { background: #bbf7d0; transform: translateY(-1px); }
 
-        .btn-quiz-dash { background: #38bdf8; color: #00122e; }
-        .btn-quiz-dash:hover { background: #7dd3fc; transform: translateY(-1px); }
+        .btn-quiz-dash { background: var(--soft-blue); color: var(--accent-blue); border: 1px solid #bfdbfe; }
+        .btn-quiz-dash:hover { background: #dbeafe; transform: translateY(-1px); }
 
-        .btn-login { background: var(--gold); color: #000; }
-        .btn-profile { background: #7c3aed; color: #fff; }
-        .btn-logout { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
-        .btn-logout:hover { background: #ef4444; color: #fff; }
+        .btn-login { background: var(--accent-blue); color: #fff; }
+        .btn-profile { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+        .btn-logout { background: var(--red-light); color: var(--red); border: 1px solid #fecaca; }
+        .btn-logout:hover { background: #fca5a5; }
 
         /* 2. MAIN LAYOUT */
         .arena-wrapper {
             max-width: 1220px;
-            margin: 18px auto 30px auto;
+            margin: 20px auto 35px auto;
             padding: 0 16px;
             display: grid;
             grid-template-columns: 1.65fr 1fr;
-            gap: 20px;
+            gap: 24px;
             flex: 1;
             width: 100%;
         }
 
         /* 3. GAME PANEL & BUBBLE STAGE */
         .game-panel {
-            background: #0b172d;
-            border: 1px solid var(--border-gold);
+            background: #ffffff;
+            border: 1px solid var(--border-light);
             border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            padding: 22px;
+            box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
             position: relative;
@@ -133,24 +143,27 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #061124;
+            background: #f8fafc;
             padding: 12px 18px;
-            border-radius: 12px;
-            border: 1px solid var(--border-subtle);
-            margin-bottom: 12px;
+            border-radius: 14px;
+            border: 1px solid var(--border-light);
+            margin-bottom: 14px;
             font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-dark);
         }
-        .hud-stats b { font-size: 17px; }
+        .hud-stats b { font-family: 'Outfit', sans-serif; font-size: 19px; }
 
         .combo-badge {
-            background: linear-gradient(135deg, #ea580c, #c2410c);
-            padding: 2px 10px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            padding: 3px 12px;
             border-radius: 999px;
             font-size: 12px;
-            font-weight: 800;
+            font-weight: 900;
             color: #fff;
             display: none;
-            animation: pulseCombo 0.4s infinite alternate;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+            animation: pulseCombo 0.35s infinite alternate;
         }
 
         @keyframes pulseCombo {
@@ -160,12 +173,12 @@
 
         .bubble-stage {
             position: relative;
-            background: radial-gradient(circle at bottom, #07152e, #020713);
-            border: 2px dashed rgba(255, 214, 10, 0.25);
-            border-radius: 16px;
-            height: 500px;
+            background: radial-gradient(circle at 50% 120%, #eff6ff 0%, #f8fafc 100%);
+            border: 2px dashed #bfdbfe;
+            border-radius: 18px;
+            height: 520px;
             overflow: hidden;
-            margin-bottom: 15px;
+            margin-bottom: 14px;
         }
 
         .bubble-stage.shake-error {
@@ -174,114 +187,175 @@
         }
 
         @keyframes stageShake {
-            10%, 90% { transform: translate3d(-2px, 0, 0); }
-            20%, 80% { transform: translate3d(3px, 0, 0); }
+            10%, 90% { transform: translate3d(-3px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
             30%, 50%, 70% { transform: translate3d(-5px, 0, 0); }
             40%, 60% { transform: translate3d(5px, 0, 0); }
         }
 
+        /* BUBBLE STYLES */
         .bubble {
             position: absolute;
-            width: 72px;
-            height: 72px;
+            width: 74px;
+            height: 74px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 16.5px;
             font-weight: 900;
-            color: #fff;
             cursor: pointer;
-            box-shadow: 0 10px 22px rgba(0,0,0,0.6), inset 0 0 14px rgba(255,255,255,0.45);
-            transition: transform 0.15s, border-color 0.15s;
-            border: 3px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12), inset 0 3px 6px rgba(255, 255, 255, 0.85);
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 3px solid #ffffff;
         }
 
         .bubble:hover { transform: scale(1.12); }
-        .bubble.roman { background: radial-gradient(circle at 30% 30%, #38bdf8, #0369a1); }
-        .bubble.hindu { background: radial-gradient(circle at 30% 30%, #f59e0b, #b45309); }
+        
+        /* Light Gradient Themes */
+        .bubble.roman { 
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
+            color: #ffffff;
+        }
+        
+        .bubble.hindu { 
+            background: linear-gradient(135deg, #10b981, #047857); 
+            color: #ffffff;
+        }
         
         .bubble.decoy {
-            background: radial-gradient(circle at 30% 30%, #ec4899, #9d174d);
-            border-color: rgba(244, 114, 182, 0.4);
+            background: linear-gradient(135deg, #f43f5e, #be123c);
+            color: #ffffff;
+        }
+
+        .bubble.bonus {
+            background: linear-gradient(135deg, #facc15, #ca8a04);
+            color: #713f12;
+            border: 3px solid #fef08a;
+            animation: bonusSpin 2s infinite linear;
+        }
+
+        @keyframes bonusSpin {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(10deg); }
+            100% { transform: rotate(0deg); }
         }
 
         .bubble.selected {
-            border-color: #ffd60a !important;
+            border: 4px solid #f59e0b !important;
             transform: scale(1.18);
-            box-shadow: 0 0 25px #ffd60a, inset 0 0 15px #ffd60a;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.6), inset 0 0 10px #ffffff;
+        }
+
+        /* Floating Score Text Effect */
+        .floating-pts {
+            position: absolute;
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--green);
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 25;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-45px) scale(1.3); }
+        }
+
+        /* Sparkle particles */
+        .sparkle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f59e0b;
+            pointer-events: none;
+            animation: burst 0.5s ease-out forwards;
+            z-index: 20;
+        }
+
+        @keyframes burst {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
         }
 
         .bubble-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(2, 8, 23, 0.9);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(8px);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 10;
+            z-index: 30;
             text-align: center;
             padding: 24px;
         }
 
         .btn-play-action {
-            background: var(--gold);
-            color: #000;
+            background: var(--primary-blue);
+            color: #ffffff;
             border: none;
-            padding: 13px 36px;
+            padding: 14px 38px;
             border-radius: 12px;
             font-weight: 800;
             font-size: 16px;
             cursor: pointer;
-            box-shadow: 0 8px 25px rgba(255, 214, 10, 0.4);
-            transition: 0.2s;
+            box-shadow: 0 8px 20px rgba(11, 75, 193, 0.3);
+            transition: all 0.2s ease;
         }
-        .btn-play-action:hover { background: #ffc300; transform: translateY(-2px); }
+        .btn-play-action:hover { background: var(--accent-blue); transform: translateY(-2px); }
 
-        /* 4. LEADERBOARD PANEL */
+        /* 4. LEADERBOARD PANEL (WHITE THEME) */
         .leaderboard-panel {
-            background: #0b172d;
-            border: 1px solid var(--border-subtle);
+            background: #ffffff;
+            border: 1px solid var(--border-light);
             border-radius: 20px;
-            padding: 20px;
+            padding: 22px;
+            box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
         }
 
         .leader-header {
             padding-bottom: 12px;
-            border-bottom: 1px solid var(--border-subtle);
-            margin-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 16px;
         }
-        .leader-header h2 { font-family: 'Outfit', sans-serif; font-size: 20px; color: var(--gold); }
+        .leader-header h2 { font-family: 'Outfit', sans-serif; font-size: 20px; color: var(--primary-blue); font-weight: 900; }
 
         .personal-card {
-            background: #061124;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 12px;
+            background: var(--soft-blue);
+            border: 1px solid #bfdbfe;
+            border-radius: 14px;
             padding: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             text-align: center;
         }
 
         .lead-item {
-            background: #071328;
-            padding: 11px 14px;
-            border-radius: 8px;
+            background: #ffffff;
+            padding: 12px 14px;
+            border-radius: 10px;
             margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 13.5px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            border: 1px solid var(--border-light);
+            transition: transform 0.15s ease;
         }
+        .lead-item:hover { transform: translateX(3px); border-color: #cbd5e1; }
 
         @media(max-width: 850px) {
             .arena-wrapper { grid-template-columns: 1fr; }
-            .game-nav { flex-direction: column; gap: 10px; }
-            .bubble-stage { height: 420px; }
+            .game-nav { flex-direction: column; gap: 12px; }
+            .bubble-stage { height: 430px; }
         }
     </style>
 </head>
@@ -298,7 +372,7 @@
         <div class="nav-right-actions">
             <span class="user-status-text" id="gameUserStatus">👤 Checking...</span>
             
-            <a href="https://game.cbsesir.com" class="btn-action btn-game-dash">🎮 Back to Game Arena</a>
+            <a href="https://game.cbsesir.com" class="btn-action btn-game-dash">🎮 Game Arena</a>
             <a href="https://cbsesir.com" class="btn-action btn-quiz-dash">📊 Main Dashboard</a>
 
             <a href="https://quiz.cbsesir.com/login.html" class="btn-action btn-login" id="gameLoginBtn">🔑 Login</a>
@@ -313,7 +387,7 @@
         <!-- BUBBLE STAGE -->
         <div class="game-panel">
             <div class="hud-stats">
-                <div>⏱ Timer: <b id="timerVal" style="color:var(--cyan);">45s</b></div>
+                <div>⏱ Timer: <b id="timerVal" style="color:var(--accent-blue);">45s</b></div>
                 <div>💥 Matches: <b id="matchVal" style="color:var(--green);">0</b></div>
                 <div id="comboBadge" class="combo-badge">🔥 2X COMBO</div>
                 <div>⭐ Run Points: <b id="scoreVal" style="color:var(--gold);">0</b></div>
@@ -321,17 +395,17 @@
 
             <div class="bubble-stage" id="bubbleStage">
                 <div class="bubble-overlay" id="startOverlay">
-                    <div style="font-size: 46px; margin-bottom: 8px;">🫧</div>
-                    <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:#fff; margin-bottom: 6px;">Roman Bubble Frenzy Pro</h2>
-                    <p style="font-size: 13.5px; color:#94a3b8; max-width: 420px; margin-bottom: 20px;">
-                        Pop matching Roman &amp; Hindu numbers! Beware of <b>Pink Decoy Bubbles</b> that have no match. Wrong click costs -3 seconds!
+                    <div style="font-size: 52px; margin-bottom: 10px;">🫧</div>
+                    <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--primary-blue); margin-bottom: 6px; font-weight: 900;">Roman Bubble Frenzy Pro</h2>
+                    <p style="font-size: 14px; color:var(--text-muted); max-width: 440px; margin-bottom: 22px; line-height: 1.6;">
+                        Pop matching <b style="color:var(--accent-blue);">Blue Roman</b> &amp; <b style="color:var(--green);">Green Hindu</b> pairs! Beware of <b style="color:var(--red);">Red Decoys</b>. Catch <b style="color:var(--gold);">Golden Clocks</b> for +5 seconds!
                     </p>
                     <button class="btn-play-action" onclick="initBubbleGame()">▶ Start Challenge</button>
                 </div>
             </div>
 
-            <div style="font-size: 12.5px; color: #64748b; text-align: center;">
-                Build combos for maximum multipliers! Points sync instantly to your <b>cbsesir.com</b> Rank.
+            <div style="font-size: 13px; color: var(--text-muted); text-align: center; font-weight: 600;">
+                Build combos for multipliers! Earned points instantly sync to your <b>cbsesir.com</b> Global Rank.
             </div>
         </div>
 
@@ -339,22 +413,94 @@
         <div class="leaderboard-panel">
             <div class="leader-header">
                 <h2>🏆 Roman Champions</h2>
-                <span style="font-size: 12px; color: #94a3b8;">Realtime State High Scores</span>
+                <span style="font-size: 12.5px; color: var(--text-muted);">Realtime State High Scores</span>
             </div>
 
             <div class="personal-card">
-                <div style="font-size: 12px; color: #94a3b8; font-weight: 600;">YOUR BEST ROMAN RECORD</div>
-                <div style="font-size: 28px; font-weight: 900; color: var(--gold); margin-top: 4px;" id="userBestRoman">0 pts</div>
+                <div style="font-size: 12px; color: var(--accent-blue); font-weight: 800; letter-spacing: 0.5px;">YOUR BEST ROMAN RECORD</div>
+                <div style="font-size: 28px; font-weight: 900; color: var(--primary-blue); margin-top: 4px; font-family:'Outfit', sans-serif;" id="userBestRoman">0 pts</div>
             </div>
 
             <div id="romanChampionsList">
-                <div style="text-align: center; color: #94a3b8; padding: 20px;">Loading champions...</div>
+                <div style="text-align: center; color: var(--text-muted); padding: 20px;">Loading champions...</div>
             </div>
         </div>
 
     </main>
 
-    <!-- 3. GAME ENGINE & FIREBASE DIRECT SYNC -->
+    <!-- 3. SYNTHESIZED SOUND EFFECTS ENGINE (Zero External Dependencies) -->
+    <script>
+        const AudioFX = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            },
+            playPop() {
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.12);
+            },
+            playMatch() {
+                this.init();
+                const now = this.ctx.currentTime;
+                [523.25, 659.25, 783.99].forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.06);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.06);
+                    osc.stop(now + idx * 0.06 + 0.15);
+                });
+            },
+            playWrong() {
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(110, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.2);
+            },
+            playBonus() {
+                this.init();
+                const now = this.ctx.currentTime;
+                [587.33, 880, 1174.66].forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+                    gain.gain.setValueAtTime(0.25, now + idx * 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.05);
+                    osc.stop(now + idx * 0.05 + 0.2);
+                });
+            }
+        };
+    </script>
+
+    <!-- 4. FIREBASE SYNC & ADVANCED GAME ENGINE -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCODdCPvN4L96ye0YuxippaIUHnEUwnT90",
@@ -402,9 +548,8 @@
             if (loginBtn) loginBtn.style.display = "none";
             if (profileBtn) profileBtn.style.display = "inline-flex";
             if (logoutBtn) logoutBtn.style.display = "inline-flex";
-            if (userStatusEl) userStatusEl.innerHTML = 'Welcome, <b style="color:#ffd60a;">' + name + '</b> 👋';
+            if (userStatusEl) userStatusEl.innerHTML = 'Welcome, <b>' + name + '</b> 👋';
 
-            // Realtime user best score in Roman
             if (uid) {
                 db.collection("gameProfiles").doc(uid).onSnapshot(doc => {
                     if (doc.exists) {
@@ -416,17 +561,16 @@
         }
 
         function setGuestState() {
-            if (userStatusEl) userStatusEl.innerHTML = '👤 <span style="color:#94a3b8;">Guest Player</span>';
+            if (userStatusEl) userStatusEl.innerHTML = '👤 <span style="color:var(--text-muted);">Guest Player</span>';
             if (loginBtn) loginBtn.style.display = "inline-flex";
             if (profileBtn) profileBtn.style.display = "none";
             if (logoutBtn) logoutBtn.style.display = "none";
         }
 
-        // Live Realtime Roman Champions Leaderboard
         db.collection("gameProfiles").orderBy("romanScore", "desc").limit(5).onSnapshot(snap => {
             const listEl = document.getElementById("romanChampionsList");
             if (snap.empty) {
-                listEl.innerHTML = "<div style='text-align:center; color:#94a3b8; padding:15px;'>No champion scores yet!</div>";
+                listEl.innerHTML = "<div style='text-align:center; color:var(--text-muted); padding:15px;'>No champion scores yet!</div>";
                 return;
             }
             let html = "";
@@ -439,7 +583,7 @@
                 html += `
                     <div class="lead-item">
                         <span><b>${badge}</b> ${name}</span>
-                        <b style="color:#ffd60a;">${score} pts</b>
+                        <b style="color:var(--primary-blue); font-family:'Outfit', sans-serif;">${score} pts</b>
                     </div>`;
                 r++;
             });
@@ -467,7 +611,7 @@
         });
 
         /* ==========================================================
-           GAMEPLAY ENGINE (BUBBLE MATCHING & COMBO)
+           GAMEPLAY ENGINE WITH PARTICLES, SOUNDS & BONUSES
            ========================================================== */
         const PAIRS_DATA = [
             { num: 1, rom: "I" }, { num: 4, rom: "IV" }, { num: 5, rom: "V" },
@@ -508,22 +652,20 @@
             document.getElementById("matchVal").innerText = matchesCount;
             comboEl.style.display = "none";
 
-            // First wave
             spawnPair();
             spawnPair();
             spawnDecoy();
 
-            // Continuous spawn wave
             clearInterval(spawnInterval);
             spawnInterval = setInterval(() => {
                 const count = document.querySelectorAll(".bubble").length;
                 if (count < 9) {
                     spawnPair();
-                    if (Math.random() > 0.4) spawnDecoy();
+                    if (Math.random() > 0.45) spawnDecoy();
+                    if (Math.random() < 0.18) spawnBonusClock();
                 }
-            }, 2300);
+            }, 2100);
 
-            // Precision Timer with Zero Clamping
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 if (!isGameRunning) {
@@ -545,32 +687,38 @@
         function spawnPair() {
             if (!isGameRunning) return;
             const pair = PAIRS_DATA[Math.floor(Math.random() * PAIRS_DATA.length)];
-            createBubble(pair.num, "hindu", pair.num, false);
-            createBubble(pair.rom, "roman", pair.num, false);
+            createBubble(pair.num, "hindu", pair.num, false, false);
+            createBubble(pair.rom, "roman", pair.num, false, false);
         }
 
         function spawnDecoy() {
             if (!isGameRunning) return;
             const fake = DECOY_SYMBOLS[Math.floor(Math.random() * DECOY_SYMBOLS.length)];
-            createBubble(fake, "decoy", "decoy_" + Math.random(), true);
+            createBubble(fake, "decoy", "decoy_" + Math.random(), true, false);
         }
 
-        function createBubble(text, type, matchVal, isDecoy) {
+        function spawnBonusClock() {
+            if (!isGameRunning) return;
+            createBubble("⏱ +5s", "bonus", "bonus_clock", false, true);
+        }
+
+        function createBubble(text, type, matchVal, isDecoy, isBonus) {
             const bubble = document.createElement("div");
             bubble.className = `bubble ${type}`;
             bubble.innerText = text;
             bubble.dataset.value = matchVal;
             bubble.dataset.isDecoy = isDecoy ? "true" : "false";
+            bubble.dataset.isBonus = isBonus ? "true" : "false";
 
-            const stageWidth = stage.clientWidth - 80;
-            const startX = Math.max(10, Math.floor(Math.random() * stageWidth));
+            const stageWidth = stage.clientWidth - 85;
+            const startX = Math.max(12, Math.floor(Math.random() * stageWidth));
             let posY = stage.clientHeight - 85;
 
             bubble.style.left = startX + "px";
             bubble.style.top = posY + "px";
 
-            const speed = 0.8 + Math.random() * 0.8;
-            let drift = (Math.random() - 0.5) * 0.6;
+            const speed = 0.9 + Math.random() * 0.9;
+            let drift = (Math.random() - 0.5) * 0.7;
 
             const floatInterval = setInterval(() => {
                 if (!isGameRunning) {
@@ -586,7 +734,7 @@
                 bubble.style.left = curLeft + "px";
                 bubble.style.top = posY + "px";
 
-                if (posY <= -75) {
+                if (posY <= -80) {
                     clearInterval(floatInterval);
                     bubble.remove();
                 }
@@ -596,29 +744,76 @@
             stage.appendChild(bubble);
         }
 
+        function triggerSparkles(x, y) {
+            for (let i = 0; i < 8; i++) {
+                const sp = document.createElement('div');
+                sp.className = 'sparkle';
+                sp.style.left = x + 'px';
+                sp.style.top = y + 'px';
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 35 + Math.random() * 45;
+                sp.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+                sp.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+                stage.appendChild(sp);
+                setTimeout(() => sp.remove(), 500);
+            }
+        }
+
+        function showFloatingScore(text, x, y, color = '#16a34a') {
+            const f = document.createElement('div');
+            f.className = 'floating-pts';
+            f.innerText = text;
+            f.style.color = color;
+            f.style.left = x + 'px';
+            f.style.top = y + 'px';
+            stage.appendChild(f);
+            setTimeout(() => f.remove(), 800);
+        }
+
         function onBubbleClick(bubble) {
             if (!isGameRunning) return;
 
+            // BONUS BUBBLE
+            if (bubble.dataset.isBonus === "true") {
+                AudioFX.playBonus();
+                gameTimer += 5;
+                document.getElementById("timerVal").innerText = gameTimer + "s";
+                const rect = bubble.getBoundingClientRect();
+                const sRect = stage.getBoundingClientRect();
+                showFloatingScore("+5s TIME!", rect.left - sRect.left, rect.top - sRect.top, '#d97706');
+                triggerSparkles(rect.left - sRect.left + 35, rect.top - sRect.top + 35);
+                bubble.remove();
+                return;
+            }
+
+            // DECOY CLICK
             if (bubble.dataset.isDecoy === "true") {
+                AudioFX.playWrong();
                 triggerWrongPenalty();
                 bubble.style.transform = "scale(0.8)";
                 setTimeout(() => bubble.remove(), 150);
                 return;
             }
 
+            // FIRST BUBBLE SELECTION
             if (!selectedBubble) {
+                AudioFX.playPop();
                 selectedBubble = bubble;
                 bubble.classList.add("selected");
                 return;
             }
 
+            // DESELECT
             if (selectedBubble === bubble) {
+                AudioFX.playPop();
                 selectedBubble.classList.remove("selected");
                 selectedBubble = null;
                 return;
             }
 
+            // CHECK MATCH
             if (selectedBubble.dataset.value === bubble.dataset.value) {
+                AudioFX.playMatch();
                 comboStreak++;
                 let multiplier = comboStreak >= 4 ? 3 : (comboStreak >= 2 ? 2 : 1);
 
@@ -634,6 +829,11 @@
                 document.getElementById("scoreVal").innerText = gameScore;
                 document.getElementById("matchVal").innerText = matchesCount;
 
+                const rect = bubble.getBoundingClientRect();
+                const sRect = stage.getBoundingClientRect();
+                showFloatingScore(`+${earnedPoints}`, rect.left - sRect.left, rect.top - sRect.top);
+                triggerSparkles(rect.left - sRect.left + 35, rect.top - sRect.top + 35);
+
                 bubble.style.transform = "scale(1.35)";
                 selectedBubble.style.transform = "scale(1.35)";
                 bubble.style.opacity = "0";
@@ -645,6 +845,7 @@
 
                 selectedBubble = null;
             } else {
+                AudioFX.playWrong();
                 triggerWrongPenalty();
             }
         }
@@ -665,7 +866,7 @@
         }
 
         /* ==========================================================
-           ATOMIC FIRESTORE SCORE SYNC (FAIL-SAFE ENGINE)
+           ATOMIC FIRESTORE SCORE SYNC (FAIL-SAFE)
            ========================================================== */
         async function endBubbleGame() {
             if (!isGameRunning) return;
@@ -676,28 +877,27 @@
 
             overlay.style.display = "flex";
             overlay.innerHTML = `
-                <div style="font-size: 44px; margin-bottom: 6px;">🏁</div>
-                <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--gold);">Round Complete!</h2>
-                <p style="font-size: 15px; color:#fff; margin: 8px 0 16px 0;">
-                    You popped <b>${matchesCount} matching pairs</b> and secured <b style="color:var(--gold); font-size:22px;">+${gameScore}</b> pts!
+                <div style="font-size: 50px; margin-bottom: 8px;">🏆</div>
+                <h2 style="font-family:'Outfit', sans-serif; font-size: 28px; color:var(--primary-blue); font-weight:900;">Challenge Concluded!</h2>
+                <p style="font-size: 15px; color:var(--text-dark); margin: 8px 0 18px 0; font-weight:600;">
+                    You popped <b>${matchesCount} matching pairs</b> and racked up <b style="color:var(--primary-blue); font-size:24px;">+${gameScore}</b> pts!
                 </p>
                 <button class="btn-play-action" onclick="initBubbleGame()">🔄 Play Again</button>
             `;
 
             if (gameScore <= 0) return;
 
-            // Dual Fallback: Auth user OR shared cookie
             const cookieData = readSharedCookie();
             const currentUid = (auth.currentUser && auth.currentUser.uid) || (cookieData ? cookieData.uid : null);
             const studentName = (auth.currentUser && auth.currentUser.displayName) || (cookieData ? cookieData.name : "Student");
 
             if (!currentUid) {
-                alert(`Game Over! Scored ${gameScore} points. Please login to save your record!`);
+                alert(`Game Over! Scored ${gameScore} points. Please login to record your score!`);
                 return;
             }
 
             try {
-                // 1. Update Game Profile (Individual Roman best score & game total)
+                // 1. Update Game Profile (Individual Roman score)
                 await db.collection("gameProfiles").doc(currentUid).set({
                     uid: currentUid,
                     name: studentName,
@@ -706,7 +906,7 @@
                     lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
 
-                // 2. Direct Sync to cbsesir.com Main Portal User Collection
+                // 2. Sync to Main Portal User Collection
                 await db.collection("users").doc(currentUid).set({
                     totalScore: firebase.firestore.FieldValue.increment(gameScore)
                 }, { merge: true });
@@ -714,7 +914,7 @@
                 // 3. Local cookie update
                 updateSharedCookiePoints(gameScore);
 
-                // 4. Instant UI update on this page
+                // 4. Update UI
                 const currentDisplay = parseInt(userBestDisplay.innerText) || 0;
                 userBestDisplay.innerText = (currentDisplay + gameScore) + " pts";
 
