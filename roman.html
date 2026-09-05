@@ -1,395 +1,549 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roman Bubble Challenge v2</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maths Roman Challenge - MD QUIZZES</title>
 
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- Embedded Game Bridge -->
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyC0dDCPvN4L96ye0YuxippaIUHnEUwnT90",
-    authDomain: "mdquizzes-c255a.firebaseapp.com",
-    projectId: "mdquizzes-c255a",
-    storageBucket: "mdquizzes-c255a.firebasestorage.app",
-    messagingSenderId: "510171455812",
-    appId: "1:510171455812:web:dcead5207dc1272aa9b711"
-  };
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  let activePlayer = null;
-  let activePlayerName = "Guest";
-
-  // 1-Click Fast Google Connect for Subdomain
-  window.quickGameLogin = function() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).then((result) => {
-      const user = result.user;
-      const defaultName = user.displayName || user.email.split("@")[0];
-      
-      db.collection("gameProfiles").doc(user.uid).set({
-        name: defaultName,
-        email: user.email
-      }, { merge: true });
-    }).catch((err) => {
-      console.error("Game login error:", err);
-      alert("Login failed: " + err.message);
-    });
-  };
-
-  // Auth Listener
-  auth.onAuthStateChanged((user) => {
-    const playerField = document.getElementById("playerName");
-    const loginStatus = document.getElementById("authStatusNotice");
-
-    if (user) {
-      activePlayer = user;
-      activePlayerName = user.displayName || user.email.split("@")[0];
-
-      if (playerField) {
-        playerField.value = activePlayerName;
-        playerField.disabled = true;
-      }
-
-      if (loginStatus) {
-        loginStatus.innerHTML = `<span style="color:#22c55e;">✓ Connected as: <b>${activePlayerName}</b></span>`;
-      }
-    } else {
-      activePlayer = null;
-      activePlayerName = "Guest";
-
-      if (playerField) {
-        playerField.value = "Guest (No Save)";
-        playerField.disabled = true;
-      }
-
-      if (loginStatus) {
-        loginStatus.innerHTML = `
-          <span style="color:#ef4444;">⚠ Not connected on game portal.</span><br>
-          <button type="button" onclick="quickGameLogin()" style="margin-top:6px; padding:6px 12px; background:#4285F4; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold;">⚡ 1-Click Google Connect</button>
-          <div style="margin-top:4px;"><a href="https://cbsesir.com/p/login.html" target="_blank" style="color:#38bdf8; font-size:11px;">Or login via main site</a></div>
-        `;
-      }
-    }
-  });
-
-  // Public Live Leaderboard Listener
-  window.subscribeToGameLeaderboard = function(gameId, containerElementId, limitCount = 10) {
-    const listEl = document.getElementById(containerElementId);
-    if (!listEl) return;
-
-    db.collection(`lb_${gameId}`)
-      .orderBy("highScore", "desc")
-      .limit(limitCount)
-      .onSnapshot((snapshot) => {
-        if (snapshot.empty) {
-          listEl.innerHTML = "<li style='text-align:center; padding:10px; color:#94a3b8;'>No high scores yet!</li>";
-          return;
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        :root {
+            --gold: #ffd60a;
+            --cyan: #38bdf8;
+            --green: #10b981;
+            --border-subtle: rgba(255, 255, 255, 0.1);
+            --border-gold: rgba(255, 214, 10, 0.35);
         }
 
-        let html = "";
-        let rank = 1;
+        body {
+            background: radial-gradient(circle at center, #071736 0%, #020917 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+        }
 
-        snapshot.forEach((doc) => {
-          const item = doc.data();
-          html += `
-            <li style="display:flex; justify-content:space-between; align-items:center; padding:8px 6px; border-bottom:1px solid rgba(255,255,255,0.15); font-size:14px;">
-              <span><b>#${rank}</b> ${item.name || "Player"}</span>
-              <span style="color:#facc15; font-weight:bold;">${item.highScore || 0} pts</span>
-            </li>
-          `;
-          rank++;
-        });
+        /* 1. TOP NAVBAR */
+        .game-nav {
+            background: rgba(2, 9, 23, 0.95);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
 
-        listEl.innerHTML = html;
-      }, (err) => {
-        console.warn("Leaderboard status:", err.message);
-        listEl.innerHTML = `<li style='color:#94a3b8; font-size:12px; padding:6px; text-align:center;'>Leaderboard syncing...</li>`;
-      });
-  };
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--gold);
+            font-family: 'Outfit', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+        }
 
-  // Score Sync to Firestore
-  window.submitFinalGameScore = async function(gameId, finalScore) {
-    const statusBox = document.getElementById("cloudSaveStatus");
+        .brand-tag {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
 
-    if (!activePlayer) {
-      if (statusBox) {
-        statusBox.innerHTML = `<span style="color:#ef4444;">Score not saved (Login required).</span>`;
-      }
-      return;
-    }
+        .nav-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-    try {
-      if (statusBox) statusBox.textContent = "Syncing score...";
+        .user-status-text { font-size: 13.5px; font-weight: 600; color: #cbd5e1; }
+        .user-status-text b { color: var(--gold); }
 
-      const points = Number(finalScore);
-      const now = new Date();
+        .btn-action {
+            padding: 7px 15px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
 
-      const dayKey = now.toISOString().slice(0, 10);
-      const monthKey = now.toISOString().slice(0, 7);
-      const yearKey = now.getFullYear().toString();
+        .btn-hub { background: rgba(255, 255, 255, 0.08); color: #fff; border: 1px solid var(--border-subtle); }
+        .btn-hub:hover { background: rgba(255, 255, 255, 0.18); }
 
-      // High Score Update
-      const gameRef = db.collection(`lb_${gameId}`).doc(activePlayer.uid);
-      const existingDoc = await gameRef.get();
+        .btn-login { background: var(--gold); color: #000; }
+        .btn-profile { background: var(--cyan); color: #00122e; }
+        .btn-logout { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .btn-logout:hover { background: #ef4444; color: #fff; }
 
-      if (!existingDoc.exists || (existingDoc.data().highScore || 0) < points) {
-        await gameRef.set({
-          uid: activePlayer.uid,
-          name: activePlayerName,
-          highScore: points,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-      }
+        /* 2. MAIN GRID LAYOUT */
+        .arena-wrapper {
+            max-width: 1200px;
+            margin: 25px auto 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 24px;
+            flex: 1;
+            width: 100%;
+        }
 
-      // Profile Totals Update
-      const profileRef = db.collection("gameProfiles").doc(activePlayer.uid);
-      const profileDoc = await profileRef.get();
-      let profileData = profileDoc.exists ? profileDoc.data() : {};
+        /* GAME BOARD */
+        .game-panel {
+            background: #0b172d;
+            border: 1px solid var(--border-gold);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
 
-      let newDailyScore = (profileData.currentDayKey === dayKey)
-        ? (profileData.dailyScore || 0) + points
-        : points;
+        .game-header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 26px;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+        .game-header p { font-size: 13.5px; color: #94a3b8; }
 
-      let newMonthlyScore = (profileData.currentMonthKey === monthKey)
-        ? (profileData.monthlyScore || 0) + points
-        : points;
+        .game-metrics {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .metric-badge {
+            background: #061124;
+            padding: 10px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            font-size: 14px;
+        }
+        .metric-badge b { font-size: 18px; color: var(--gold); }
 
-      let newYearlyScore = (profileData.currentYearKey === yearKey)
-        ? (profileData.yearlyScore || 0) + points
-        : points;
+        .target-box {
+            background: #020713;
+            border: 2px dashed var(--border-gold);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 15px 0;
+        }
+        .target-number {
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--gold);
+            letter-spacing: 2px;
+        }
 
-      await profileRef.set({
-        name: activePlayerName,
-        email: activePlayer.email,
-        totalAllGamesScore: firebase.firestore.FieldValue.increment(points),
-        currentDayKey: dayKey,
-        dailyScore: newDailyScore,
-        currentMonthKey: monthKey,
-        monthlyScore: newMonthlyScore,
-        currentYearKey: yearKey,
-        yearlyScore: newYearlyScore,
-        lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin: 20px 0;
+        }
+        .option-btn {
+            background: #0f2244;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 16px;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 22px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover {
+            background: #18376e;
+            border-color: var(--cyan);
+            transform: translateY(-2px);
+        }
 
-      if (statusBox) {
-        statusBox.innerHTML = `<span style="color:#22c55e;">✓ Score saved to Live Leaderboard!</span>`;
-      }
-    } catch (err) {
-      console.error("Firestore Save Error:", err);
-      if (statusBox) statusBox.textContent = "Error syncing score.";
-    }
-  };
-</script>
+        .control-btn {
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .control-btn:hover { background: #ffc300; }
 
-<style>
-*{ margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
-body{ height:100vh; overflow:hidden; background:linear-gradient(135deg, #4facfe, #00f2fe); }
-#gameArea{ position:absolute; inset:0; overflow:hidden; }
-#setupScreen{ position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:1000; }
-.setupBox{ background:white; padding:25px; border-radius:20px; width:340px; text-align:center; }
-.setupBox h1{ margin-bottom:15px; font-size:26px; }
-.setupBox input, .setupBox select{ width:100%; padding:12px; margin:10px 0; font-size:16px; }
-.setupBox button.start-btn{ width:100%; padding:14px; font-size:18px; border:none; background:#2196f3; color:white; border-radius:10px; cursor:pointer; }
-.setupBox button.start-btn:hover{ background:#1976d2; }
-#authStatusNotice{ font-size:13px; margin-top:10px; color:#475569; }
-#hud{ position:absolute; top:10px; left:10px; right:260px; display:flex; justify-content:space-between; font-weight:bold; font-size:20px; color:white; z-index:999; }
-#leaderboard{ position:absolute; top:0; right:0; width:250px; height:100%; background:rgba(0,0,0,0.7); color:white; padding:10px; overflow-y:auto; z-index:999; }
-#leaderboard h3{ text-align:center; margin-bottom:10px; color:#facc15; }
-#leaderList{ list-style:none; padding:0; }
-#leaderList li{ padding:6px; border-bottom:1px solid rgba(255,255,255,0.25); }
-.bubble{ position:absolute; width:82px; height:82px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:bold; cursor:pointer; user-select:none; color:white; transition:.2s; box-shadow:0 0 20px rgba(255,255,255,0.4); }
-.roman{ background:#ff9800; }
-.number{ background:#4caf50; }
-.selected{ outline:5px solid yellow; box-shadow:0 0 10px white, 0 0 25px yellow; animation:pulse .6s infinite; }
-@keyframes pulse{ 0%{transform:scale(1.15);} 50%{transform:scale(1.30);} 100%{transform:scale(1.15);} }
-.burst{ animation:burst .35s forwards; }
-@keyframes burst{ 100%{transform:scale(2); opacity:0;} }
-#floatingMessage{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-size:42px; font-weight:bold; pointer-events:none; opacity:0; z-index:9999; transition:.4s; color:yellow; }
-#gameOver{ display:none; position:absolute; inset:0; background:rgba(0,0,0,0.75); justify-content:center; align-items:center; z-index:1001; }
-.overBox{ background:white; padding:25px; border-radius:20px; width:340px; text-align:center; }
-.overBox button{ margin-top:15px; padding:12px 20px; font-size:18px; cursor:pointer; }
-#cloudSaveStatus{ margin-top:10px; font-weight:bold; font-size:14px; }
-@media(max-width:700px){ #leaderboard{ width:160px; } #hud{ right:160px; font-size:14px; } .bubble{ width:65px; height:65px; font-size:18px; } }
-</style>
+        /* LEADERBOARD SIDEBAR */
+        .leaderboard-panel {
+            background: #0b172d;
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .leaderboard-header {
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 18px;
+        }
+        .leaderboard-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 20px;
+            color: var(--gold);
+        }
+
+        .my-standing-box {
+            background: #061124;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        .leader-item {
+            background: #071328;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13.5px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media(max-width: 850px) {
+            .arena-wrapper { grid-template-columns: 1fr; }
+            .game-nav { flex-direction: column; gap: 10px; }
+        }
+    </style>
 </head>
 
 <body>
 
-<div id="setupScreen">
-  <div class="setupBox">
-    <h1>Roman Bubble</h1>
-    <input id="playerName" placeholder="Enter Player Name">
-    <select id="timeSelect">
-      <option value="30">30 Seconds</option>
-      <option value="60" selected>60 Seconds</option>
-      <option value="120">120 Seconds</option>
-    </select>
-    <select id="levelSelect">
-      <option value="easy">Easy (1–20)</option>
-      <option value="medium">Medium (1–50)</option>
-      <option value="hard">Hard (1–100)</option>
-    </select>
-    <button class="start-btn" onclick="startGame()">Start Game</button>
-    <div id="authStatusNotice">Connecting...</div>
-  </div>
-</div>
+    <!-- 1. UNIFIED NAVIGATION HEADER -->
+    <nav class="game-nav">
+        <a href="https://game.cbsesir.com" class="brand-link">
+            <span>📐 MD QUIZZES</span>
+            <span class="brand-tag">Roman Challenge</span>
+        </a>
 
-<div id="hud">
-  <div>Player: <span id="playerInfo">-</span></div>
-  <div>Score: <span id="score">0</span></div>
-  <div>Combo: <span id="combo">0</span></div>
-  <div>Time: <span id="time">60</span></div>
-</div>
+        <div class="nav-right-actions">
+            <span class="user-status-text" id="gameUserStatus">👤 Checking...</span>
+            <a href="https://game.cbsesir.com" class="btn-action btn-hub">🎮 Game Hub</a>
+            <a href="https://quiz.cbsesir.com/login.html" class="btn-action btn-login" id="gameLoginBtn">🔑 Login</a>
+            <a href="https://quiz.cbsesir.com/profile.html" class="btn-action btn-profile" id="gameProfileBtn" style="display:none;">👤 Profile</a>
+            <button class="btn-action btn-logout" id="gameLogoutBtn" onclick="gameLogout()" style="display:none;" type="button">🚪 Logout</button>
+        </div>
+    </nav>
 
-<div id="leaderboard">
-  <h3>🏆 Live Leaders</h3>
-  <ul id="leaderList">
-    <li style="text-align:center; color:#94a3b8;">Loading ranks...</li>
-  </ul>
-</div>
+    <!-- 2. GAME & LEADERBOARD SPLIT VIEW -->
+    <main class="arena-wrapper">
 
-<div id="gameArea"></div>
-<div id="floatingMessage"></div>
+        <!-- GAME AREA -->
+        <div class="game-panel">
+            <div class="game-header">
+                <h1>🧮 Roman Numeral Sprint</h1>
+                <p>Pick the correct Roman numeral equivalent before the timer runs out!</p>
+            </div>
 
-<div id="gameOver">
-  <div class="overBox">
-    <h2>Game Over</h2>
-    <p id="finalScore"></p>
-    <div id="cloudSaveStatus"></div>
-    <button onclick="location.reload()">Play Again</button>
-  </div>
-</div>
+            <div class="game-metrics">
+                <div class="metric-badge">⏱ Time Left: <b id="gameTimer">15s</b></div>
+                <div class="metric-badge">⭐ Current Run: <b id="gameScore">0</b> pts</div>
+            </div>
 
-<script>
-const gameArea = document.getElementById("gameArea");
-let score = 0, combo = 0, selected = null, gameTime = 60, maxNumber = 20, currentLevel = "easy", timerInterval, spawnInterval;
+            <div class="target-box">
+                <div style="font-size: 13px; color: #94a3b8; text-transform: uppercase;">Convert This Number:</div>
+                <div class="target-number" id="targetDisplay">-</div>
+            </div>
 
-window.addEventListener("DOMContentLoaded", () => {
-  if (typeof subscribeToGameLeaderboard === "function") {
-    subscribeToGameLeaderboard("roman-bubble", "leaderList", 10);
-  }
-});
+            <div class="options-grid" id="optionsContainer">
+                <button class="option-btn" disabled>-</button>
+                <button class="option-btn" disabled>-</button>
+                <button class="option-btn" disabled>-</button>
+                <button class="option-btn" disabled>-</button>
+            </div>
 
-function toRoman(num){
-  const values = [[100,"C"],[90,"XC"],[50,"L"],[40,"XL"],[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]];
-  let result = "";
-  for(let [value,symbol] of values){
-    while(num >= value){ result += symbol; num -= value; }
-  }
-  return result;
-}
+            <div>
+                <button class="control-btn" id="startBtn" onclick="startGame()">▶ Start Challenge</button>
+            </div>
+        </div>
 
-function startGame(){
-  const playerName = document.getElementById("playerName").value.trim();
-  if(!playerName){ alert("Please enter player name"); return; }
-  document.getElementById("playerInfo").textContent = playerName;
-  gameTime = parseInt(document.getElementById("timeSelect").value);
-  currentLevel = document.getElementById("levelSelect").value;
-  if(currentLevel === "easy") maxNumber = 20;
-  if(currentLevel === "medium") maxNumber = 50;
-  if(currentLevel === "hard") maxNumber = 100;
-  document.getElementById("setupScreen").style.display = "none";
-  document.getElementById("time").textContent = gameTime;
+        <!-- LEADERBOARD & STATS AREA -->
+        <div class="leaderboard-panel">
+            <div class="leaderboard-header">
+                <h2>🏆 Roman Champions</h2>
+                <span style="font-size: 12.5px; color: #94a3b8;">Realtime Game Arena Leaderboard</span>
+            </div>
 
-  timerInterval = setInterval(()=>{
-    gameTime--;
-    document.getElementById("time").textContent = gameTime;
-    if(gameTime <= 0) endGame();
-  }, 1000);
+            <div class="my-standing-box">
+                <div style="font-size: 12px; color: #94a3b8;">YOUR BEST ROMAN SCORE</div>
+                <div style="font-size: 24px; font-weight: 800; color: var(--gold);" id="userPersonalBest">0 pts</div>
+            </div>
 
-  spawnInterval = setInterval(spawnPair, 1100);
-}
+            <div id="romanLeaderList">
+                <div style="text-align: center; color: #94a3b8; padding: 20px;">Loading champions...</div>
+            </div>
+        </div>
 
-function spawnPair(){
-  const num = Math.floor(Math.random() * maxNumber) + 1;
-  createBubble(toRoman(num), "roman", num);
-  createBubble(num, "number", num);
-}
+    </main>
 
-function createBubble(text, type, value){
-  const bubble = document.createElement("div");
-  bubble.className = `bubble ${type}`;
-  bubble.textContent = text;
-  bubble.dataset.type = type;
-  bubble.dataset.value = value;
-  bubble.style.left = Math.random() * (window.innerWidth - 320) + "px";
+    <!-- 3. AUTH & GAMEPLAY SCRIPT -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCODdCPvN4L96ye0YuxippaIUHnEUwnT90",
+            authDomain: "mdquizzes-c255a.firebaseapp.com",
+            projectId: "mdquizzes-c255a",
+            storageBucket: "mdquizzes-c255a.firebasestorage.app",
+            messagingSenderId: "510171455812",
+            appId: "1:510171455812:web:dcead5207dc1272aa9b711"
+        };
 
-  let y = currentLevel === "easy" ? Math.random() * (window.innerHeight - 220) : -100;
-  bubble.style.top = y + "px";
-  gameArea.appendChild(bubble);
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-  bubble.addEventListener("click", (e)=>{ e.stopPropagation(); selectBubble(bubble); });
+        const userStatusEl = document.getElementById("gameUserStatus");
+        const loginBtn = document.getElementById("gameLoginBtn");
+        const profileBtn = document.getElementById("gameProfileBtn");
+        const logoutBtn = document.getElementById("gameLogoutBtn");
 
-  let speed = currentLevel === "easy" ? 0.25 + Math.random()*0.30 : currentLevel === "medium" ? 1.20 + Math.random()*1.20 : 2.50 + Math.random()*2.50;
-  const drift = (Math.random() - 0.5) * 1.5;
+        /* Shared Cookie Reader (.cbsesir.com) */
+        function readSharedCookie() {
+            const match = document.cookie.match(new RegExp('(^| )cbsesir_user=([^;]+)'));
+            if (match) {
+                try { return JSON.parse(decodeURIComponent(match[2])); } catch (e) { return null; }
+            }
+            return null;
+        }
 
-  const move = setInterval(()=>{
-    if(currentLevel === "easy"){ bubble.style.left = (parseFloat(bubble.style.left) + drift) +"px"; y -= speed; }
-    else { y += speed; }
-    bubble.style.top = y + "px";
+        window.gameLogout = function() {
+            document.cookie = "cbsesir_user=; domain=.cbsesir.com; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+            auth.signOut().then(() => {
+                window.location.href = "https://cbsesir.com";
+            });
+        };
 
-    if(y > window.innerHeight + 120 || y < -120){
-      if(selected === bubble){ bubble.classList.remove("selected"); selected = null; showWrongPair(); }
-      clearInterval(move);
-      bubble.remove();
-    }
-  }, 16);
-}
+        function setLoggedInState(uid, name) {
+            if (loginBtn) loginBtn.style.display = "none";
+            if (profileBtn) profileBtn.style.display = "inline-flex";
+            if (logoutBtn) logoutBtn.style.display = "inline-flex";
+            if (userStatusEl) userStatusEl.innerHTML = 'Welcome, <b style="color:#ffd60a;">' + name + '</b> 👋';
 
-function selectBubble(bubble){
-  if(selected === null){ selected = bubble; bubble.classList.add("selected"); return; }
-  if(selected === bubble) return;
+            // Realtime listener for User's personal Roman Score
+            db.collection("gameProfiles").doc(uid).onSnapshot(doc => {
+                if (doc.exists) {
+                    const best = doc.data().romanScore || 0;
+                    document.getElementById("userPersonalBest").innerText = best + " pts";
+                }
+            });
+        }
 
-  if(selected.dataset.value === bubble.dataset.value && selected.dataset.type !== bubble.dataset.type){
-    burst(selected); burst(bubble); selected = null;
-    combo++;
-    document.getElementById("combo").textContent = combo;
-    let points = combo >= 3 ? 3 : 2;
-    score += points;
-    document.getElementById("score").textContent = score;
-    showMessage("+" + points, "yellow");
-  } else {
-    selected.classList.remove("selected");
-    showWrongPair();
-    selected = null;
-    combo = 0;
-    document.getElementById("combo").textContent = 0;
-  }
-}
+        function setGuestState() {
+            if (userStatusEl) userStatusEl.innerHTML = '👤 <span style="color:#94a3b8;">Guest Player</span>';
+            if (loginBtn) loginBtn.style.display = "inline-flex";
+            if (profileBtn) profileBtn.style.display = "none";
+            if (logoutBtn) logoutBtn.style.display = "none";
+        }
 
-function burst(b){ b.classList.add("burst"); setTimeout(()=> b.remove(), 350); }
-function showWrongPair(){ showMessage("❌ Wrong Pair", "#ff4444"); }
-function showMessage(text, color){
-  const msg = document.getElementById("floatingMessage");
-  msg.innerHTML = text; msg.style.color = color; msg.style.opacity = "1";
-  msg.style.transform = "translate(-50%,-50%) scale(1.3)";
-  setTimeout(()=>{ msg.style.opacity = "0"; msg.style.transform = "translate(-50%,-50%) scale(1)"; }, 700);
-}
+        // 1. Live Roman Leaderboard Listener
+        db.collection("gameProfiles").orderBy("romanScore", "desc").limit(5).onSnapshot(snap => {
+            const box = document.getElementById("romanLeaderList");
+            if (snap.empty) {
+                box.innerHTML = "<div style='text-align:center; color:#94a3b8; padding:15px;'>No scores yet! Play to rank #1.</div>";
+                return;
+            }
+            let html = "";
+            let r = 1;
+            snap.forEach(d => {
+                const u = d.data();
+                const name = u.name || "Gamer";
+                const score = u.romanScore || 0;
+                let badge = r === 1 ? "🥇 " : r === 2 ? "🥈 " : r === 3 ? "🥉 " : `#${r} `;
+                html += `
+                    <div class="leader-item">
+                        <span><b>${badge}</b> ${name}</span>
+                        <b style="color:#ffd60a;">${score} pts</b>
+                    </div>`;
+                r++;
+            });
+            box.innerHTML = html;
+        });
 
-function endGame(){
-  clearInterval(timerInterval);
-  clearInterval(spawnInterval);
-  document.querySelectorAll(".bubble").forEach(b => b.remove());
-  const playerName = document.getElementById("playerInfo").textContent;
-  document.getElementById("finalScore").innerHTML = `<h3>${playerName}</h3><br>Final Score: <b>${score}</b>`;
-  document.getElementById("gameOver").style.display = "flex";
+        // 2. Cookie Instant Check
+        const session = readSharedCookie();
+        if (session && session.loggedIn) {
+            setLoggedInState(session.uid, session.name);
+        }
 
-  if (typeof submitFinalGameScore === "function") {
-    submitFinalGameScore("roman-bubble", score);
-  }
-}
-</script>
+        // 3. Auth Listener
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                db.collection("users").doc(user.uid).get().then(doc => {
+                    let name = user.displayName || user.email.split('@')[0];
+                    if (doc.exists) {
+                        const d = doc.data();
+                        name = d.displayName || d.name || name;
+                    }
+                    setLoggedInState(user.uid, name);
+                });
+            } else if (!session || !session.loggedIn) {
+                setGuestState();
+            }
+        });
+
+        /* ==========================================================
+           GAME ENGINE: ROMAN NUMBER LOGIC
+           ========================================================== */
+        const romanMap = [
+            { val: 1000, r: "M" }, { val: 900, r: "CM" }, { val: 500, r: "D" }, { val: 400, r: "CD" },
+            { val: 100, r: "C" }, { val: 90, r: "XC" }, { val: 50, r: "L" }, { val: 40, r: "XL" },
+            { val: 10, r: "X" }, { val: 9, r: "IX" }, { val: 5, r: "V" }, { val: 4, r: "IV" }, { val: 1, r: "I" }
+        ];
+
+        function toRoman(num) {
+            let res = "";
+            for (let i = 0; i < romanMap.length; i++) {
+                while (num >= romanMap[i].val) {
+                    res += romanMap[i].r;
+                    num -= romanMap[i].val;
+                }
+            }
+            return res;
+        }
+
+        let currentTarget = 0;
+        let correctAnswer = "";
+        let score = 0;
+        let timeLeft = 15;
+        let timerId = null;
+        let isPlaying = false;
+
+        function nextQuestion() {
+            currentTarget = Math.floor(Math.random() * 90) + 1; // 1 to 90
+            correctAnswer = toRoman(currentTarget);
+
+            document.getElementById("targetDisplay").innerText = currentTarget;
+
+            // Generate 3 fake options
+            let options = [correctAnswer];
+            while (options.length < 4) {
+                let fake = toRoman(Math.floor(Math.random() * 90) + 1);
+                if (!options.includes(fake)) options.push(fake);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            const container = document.getElementById("optionsContainer");
+            container.innerHTML = "";
+            options.forEach(opt => {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(chosen) {
+            if (!isPlaying) return;
+            if (chosen === correctAnswer) {
+                score += 10;
+                document.getElementById("gameScore").innerText = score;
+                nextQuestion();
+            } else {
+                endGame("Wrong selection! Game Over.");
+            }
+        }
+
+        function startGame() {
+            score = 0;
+            timeLeft = 15;
+            isPlaying = true;
+            document.getElementById("gameScore").innerText = score;
+            document.getElementById("startBtn").style.display = "none";
+
+            nextQuestion();
+
+            clearInterval(timerId);
+            timerId = setInterval(() => {
+                timeLeft--;
+                document.getElementById("gameTimer").innerText = timeLeft + "s";
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    endGame("Time is up!");
+                }
+            }, 1000);
+        }
+
+        /* ==========================================================
+           ATOMIC SCORE SUBMISSION: UPDATES GAME + MAIN LEADERBOARDS
+           ========================================================== */
+        async function endGame(reason) {
+            isPlaying = false;
+            clearInterval(timerId);
+            document.getElementById("startBtn").style.display = "inline-block";
+            document.getElementById("startBtn").innerText = "🔄 Play Again";
+
+            const container = document.getElementById("optionsContainer");
+            container.innerHTML = `<p style="grid-column: span 2; font-size: 16px; color: #f87171;">${reason}</p>`;
+
+            if (score <= 0) return;
+
+            const user = auth.currentUser;
+            if (!user) {
+                alert(`Game Over! You scored ${score} points. Login to sync with the Global Leaderboard!`);
+                return;
+            }
+
+            try {
+                const studentName = user.displayName || (session ? session.name : user.email.split("@")[0]);
+
+                // 1. Update Game Profile (Roman Score & Total Game Score)
+                await db.collection("gameProfiles").doc(user.uid).set({
+                    uid: user.uid,
+                    name: studentName,
+                    romanScore: firebase.firestore.FieldValue.increment(score),
+                    totalGameScore: firebase.firestore.FieldValue.increment(score),
+                    lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                // 2. Add points directly to Main Portal Leaderboard (cbsesir.com)
+                await db.collection("users").doc(user.uid).set({
+                    totalScore: firebase.firestore.FieldValue.increment(score)
+                }, { merge: true });
+
+                alert(`🎉 Great Job! +${score} points added to both your Game Rank and Main Leaderboard!`);
+            } catch (err) {
+                console.error("Score submission error:", err);
+            }
+        }
+    </script>
 </body>
 </html>
