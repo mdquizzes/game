@@ -16,36 +16,45 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         
         :root {
-            --gold: #ffd60a;
-            --cyan: #38bdf8;
-            --green: #10b981;
-            --red: #ef4444;
-            --purple: #a855f7;
-            --border-subtle: rgba(255, 255, 255, 0.1);
-            --border-cyan: rgba(56, 189, 248, 0.35);
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --primary-blue: #0b4bc1;
+            --accent-blue: #155eef;
+            --soft-blue: #eff6ff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-light: #e2e8f0;
+            --gold: #d97706;
+            --green: #16a34a;
+            --green-light: #dcfce7;
+            --red: #dc2626;
+            --red-light: #fee2e2;
+            --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.06);
         }
 
         body {
-            background: radial-gradient(circle at center, #022036 0%, #020917 100%);
+            background: var(--bg-main);
             min-height: 100vh;
-            color: #f8fafc;
+            color: var(--text-dark);
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
             user-select: none;
+            -webkit-user-select: none;
         }
 
         /* 1. TOP NAVBAR */
         .game-nav {
-            background: rgba(2, 9, 23, 0.95);
-            backdrop-filter: blur(14px);
-            border-bottom: 1px solid var(--border-subtle);
-            padding: 10px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-light);
+            padding: 12px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
             z-index: 1000;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
         }
 
         .brand-link {
@@ -53,20 +62,20 @@
             align-items: center;
             gap: 10px;
             text-decoration: none;
-            color: var(--gold);
+            color: var(--primary-blue);
             font-family: 'Outfit', sans-serif;
-            font-size: 19px;
-            font-weight: 800;
+            font-size: 20px;
+            font-weight: 900;
         }
 
         .brand-tag {
-            background: rgba(56, 189, 248, 0.15);
-            border: 1px solid var(--border-cyan);
-            color: var(--cyan);
+            background: var(--soft-blue);
+            border: 1px solid #bfdbfe;
+            color: var(--accent-blue);
             font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-weight: 800;
             text-transform: uppercase;
         }
 
@@ -77,108 +86,112 @@
             flex-wrap: wrap;
         }
 
-        .user-status-text { font-size: 13px; font-weight: 600; color: #cbd5e1; }
-        .user-status-text b { color: var(--gold); }
+        .user-status-text { font-size: 13.5px; font-weight: 700; color: var(--text-dark); }
+        .user-status-text b { color: var(--primary-blue); }
 
         .btn-action {
-            padding: 7px 14px;
+            padding: 8px 15px;
             border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
+            font-size: 12.5px;
+            font-weight: 800;
             text-decoration: none;
             border: none;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             transition: all 0.2s ease;
         }
 
-        .btn-game-dash { background: #10b981; color: #021a0f; }
-        .btn-game-dash:hover { background: #34d399; }
+        .btn-game-dash { background: var(--green-light); color: var(--green); border: 1px solid #bbf7d0; }
+        .btn-game-dash:hover { background: #bbf7d0; transform: translateY(-1px); }
 
-        .btn-quiz-dash { background: #38bdf8; color: #00122e; }
-        .btn-quiz-dash:hover { background: #7dd3fc; }
+        .btn-quiz-dash { background: var(--soft-blue); color: var(--accent-blue); border: 1px solid #bfdbfe; }
+        .btn-quiz-dash:hover { background: #dbeafe; transform: translateY(-1px); }
 
-        .btn-login { background: var(--gold); color: #000; }
-        .btn-profile { background: #7c3aed; color: #fff; }
-        .btn-logout { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
-        .btn-logout:hover { background: #ef4444; color: #fff; }
+        .btn-login { background: var(--accent-blue); color: #fff; }
+        .btn-profile { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+        .btn-logout { background: var(--red-light); color: var(--red); border: 1px solid #fecaca; }
+        .btn-logout:hover { background: #fca5a5; }
 
         /* 2. MAIN LAYOUT */
         .arena-wrapper {
-            max-width: 1220px;
-            margin: 18px auto 30px auto;
+            max-width: 1400px;
+            margin: 18px auto 35px auto;
             padding: 0 16px;
             display: grid;
-            grid-template-columns: 1.65fr 1fr;
-            gap: 20px;
+            grid-template-columns: 2.1fr 0.9fr;
+            gap: 22px;
             flex: 1;
             width: 100%;
         }
 
-        /* 3. CHEMISTRY ARENA */
+        /* 3. GAME PANEL & ARENA */
         .game-panel {
-            background: #07152b;
-            border: 1px solid var(--border-cyan);
+            background: #ffffff;
+            border: 1px solid var(--border-light);
             border-radius: 20px;
             padding: 24px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
             position: relative;
+            width: 100%;
         }
 
         .hud-stats {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #030c1a;
+            background: #f8fafc;
             padding: 12px 18px;
-            border-radius: 12px;
-            border: 1px solid var(--border-subtle);
-            margin-bottom: 12px;
+            border-radius: 14px;
+            border: 1px solid var(--border-light);
+            margin-bottom: 16px;
             font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-dark);
         }
-        .hud-stats b { font-size: 17px; }
+        .hud-stats b { font-family: 'Outfit', sans-serif; font-size: 19px; }
 
         .target-box {
-            background: #020813;
-            border: 2px dashed var(--border-cyan);
+            background: #f8fafc;
+            border: 2px dashed #bfdbfe;
             border-radius: 16px;
             padding: 20px;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .target-compound {
             font-family: 'Outfit', sans-serif;
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--cyan);
-            letter-spacing: 1px;
+            font-size: clamp(26px, 4vw, 36px);
+            font-weight: 900;
+            color: var(--primary-blue);
+            letter-spacing: 0.5px;
             margin: 6px 0;
         }
 
         /* Reactor Beaker Zone */
         .reactor-box {
-            background: radial-gradient(circle, #092543, #020d1c);
-            border: 2px solid rgba(56, 189, 248, 0.4);
+            background: radial-gradient(circle at 50% 120%, #eff6ff 0%, #f8fafc 100%);
+            border: 2px solid #bfdbfe;
             border-radius: 18px;
-            padding: 20px;
-            min-height: 120px;
+            padding: 18px;
+            min-height: 110px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             position: relative;
-            transition: border-color 0.2s ease;
+            transition: border-color 0.2s ease, background 0.2s ease;
         }
 
         .reactor-box.unstable {
             animation: beakerShake 0.3s cubic-bezier(.36,.07,.19,.97) both;
             border-color: var(--red);
+            background: #fef2f2;
         }
 
         @keyframes beakerShake {
@@ -190,48 +203,59 @@
 
         .selected-elements-row {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
             justify-content: center;
-            min-height: 48px;
+            align-items: center;
+            min-height: 44px;
         }
 
         .beaker-pill {
-            background: #1e293b;
-            border: 1px solid #38bdf8;
-            color: #fff;
-            padding: 8px 16px;
+            background: #ffffff;
+            border: 2px solid var(--accent-blue);
+            color: var(--primary-blue);
+            padding: 6px 14px;
             border-radius: 999px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 800;
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+            box-shadow: 0 2px 6px rgba(21, 94, 239, 0.15);
+            transition: transform 0.15s ease;
+        }
+
+        .beaker-pill:hover {
+            transform: scale(1.06);
+            background: #fee2e2;
+            border-color: var(--red);
+            color: var(--red);
         }
 
         /* Element Inventory Grid */
         .elements-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .elem-btn {
-            background: #0f2747;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #fff;
-            padding: 14px 6px;
+            background: #ffffff;
+            border: 1.5px solid var(--border-light);
+            color: var(--text-dark);
+            padding: 12px 6px;
             border-radius: 12px;
             font-size: 16px;
             font-weight: 800;
             cursor: pointer;
             text-align: center;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
             transition: all 0.15s ease;
         }
 
         .elem-btn:hover {
-            background: #183e6d;
-            border-color: var(--cyan);
+            background: var(--soft-blue);
+            border-color: #bfdbfe;
+            color: var(--primary-blue);
             transform: translateY(-2px);
         }
 
@@ -242,36 +266,39 @@
 
         .btn-fuse {
             flex: 2;
-            background: var(--cyan);
-            color: #00122e;
+            background: var(--primary-blue);
+            color: #ffffff;
             border: none;
-            padding: 13px;
-            border-radius: 10px;
+            padding: 14px;
+            border-radius: 12px;
             font-size: 15px;
             font-weight: 800;
             cursor: pointer;
-            transition: 0.2s;
+            box-shadow: 0 4px 14px rgba(11, 75, 193, 0.25);
+            transition: all 0.2s ease;
         }
-        .btn-fuse:hover { background: #7dd3fc; }
+        .btn-fuse:hover { background: var(--accent-blue); transform: translateY(-1px); }
 
         .btn-clear {
             flex: 1;
-            background: rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            padding: 13px;
-            border-radius: 10px;
+            background: var(--red-light);
+            color: var(--red);
+            border: 1px solid #fecaca;
+            padding: 14px;
+            border-radius: 12px;
             font-weight: 800;
+            font-size: 14px;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
-        .btn-clear:hover { background: #ef4444; color: #fff; }
+        .btn-clear:hover { background: #fecaca; }
 
         .combo-badge {
-            background: linear-gradient(135deg, #a855f7, #7e22ce);
-            color: white;
-            font-size: 11px;
-            font-weight: 800;
-            padding: 3px 10px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 900;
+            padding: 3px 12px;
             border-radius: 999px;
             display: none;
         }
@@ -279,74 +306,102 @@
         .game-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(2, 9, 23, 0.92);
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(8px);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 10;
+            z-index: 30;
             border-radius: 20px;
             text-align: center;
             padding: 24px;
         }
 
         .btn-play-trigger {
-            background: var(--cyan);
-            color: #00122e;
+            background: var(--primary-blue);
+            color: #ffffff;
             border: none;
-            padding: 13px 36px;
+            padding: 14px 40px;
             border-radius: 12px;
             font-weight: 800;
             font-size: 16px;
             cursor: pointer;
-            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
-            transition: 0.2s;
+            box-shadow: 0 8px 20px rgba(11, 75, 193, 0.3);
+            transition: all 0.2s ease;
         }
-        .btn-play-trigger:hover { background: #7dd3fc; transform: translateY(-2px); }
+        .btn-play-trigger:hover { background: var(--accent-blue); transform: translateY(-2px); }
+
+        /* Floating Score Text */
+        .floating-pts {
+            position: absolute;
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            pointer-events: none;
+            animation: floatUp 0.75s ease-out forwards;
+            z-index: 40;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1.3); }
+        }
 
         /* 4. LEADERBOARD PANEL */
         .leaderboard-panel {
-            background: #07152b;
-            border: 1px solid var(--border-subtle);
+            background: #ffffff;
+            border: 1px solid var(--border-light);
             border-radius: 20px;
-            padding: 20px;
+            padding: 22px;
+            box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
+            width: 100%;
         }
 
         .leader-header {
             padding-bottom: 12px;
-            border-bottom: 1px solid var(--border-subtle);
-            margin-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 16px;
         }
-        .leader-header h2 { font-family: 'Outfit', sans-serif; font-size: 20px; color: var(--gold); }
+        .leader-header h2 { font-family: 'Outfit', sans-serif; font-size: 20px; color: var(--primary-blue); font-weight: 900; }
 
         .personal-card {
-            background: #020813;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 12px;
+            background: var(--soft-blue);
+            border: 1px solid #bfdbfe;
+            border-radius: 14px;
             padding: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             text-align: center;
         }
 
         .lead-item {
-            background: #030c1a;
-            padding: 11px 14px;
-            border-radius: 8px;
+            background: #ffffff;
+            padding: 12px 14px;
+            border-radius: 10px;
             margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 13.5px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            border: 1px solid var(--border-light);
+            transition: transform 0.15s ease;
         }
+        .lead-item:hover { transform: translateX(3px); border-color: #cbd5e1; }
 
-        @media(max-width: 850px) {
-            .arena-wrapper { grid-template-columns: 1fr; }
-            .game-nav { flex-direction: column; gap: 10px; }
-            .elements-grid { grid-template-columns: repeat(3, 1fr); }
+        @media(max-width: 920px) {
+            .arena-wrapper { 
+                grid-template-columns: 1fr; 
+                margin: 10px auto 25px auto;
+                padding: 0 10px;
+                gap: 18px;
+            }
+            .game-panel { padding: 16px 14px; }
+            .game-nav { flex-direction: column; gap: 10px; padding: 12px 16px; }
+            .elements-grid { grid-template-columns: repeat(4, 1fr); }
         }
     </style>
 </head>
@@ -363,7 +418,7 @@
         <div class="nav-right-actions">
             <span class="user-status-text" id="gameUserStatus">👤 Checking...</span>
             
-            <a href="https://game.cbsesir.com" class="btn-action btn-game-dash">🎮 Back to Game Arena</a>
+            <a href="https://game.cbsesir.com" class="btn-action btn-game-dash">🎮 Game Arena</a>
             <a href="https://cbsesir.com" class="btn-action btn-quiz-dash">📊 Main Dashboard</a>
 
             <a href="https://quiz.cbsesir.com/login.html" class="btn-action btn-login" id="gameLoginBtn">🔑 Login</a>
@@ -378,23 +433,24 @@
         <!-- PLAY BOARD -->
         <div class="game-panel">
             <div class="hud-stats">
-                <div>⏱ Lab Timer: <b id="timerVal" style="color:var(--cyan);">50s</b></div>
+                <div>⏱ Lab Timer: <b id="timerVal" style="color:var(--accent-blue);">60s</b></div>
+                <div>💥 Fused: <b id="fusedCountVal" style="color:var(--green);">0</b></div>
                 <div id="comboBadge" class="combo-badge">🔥 2X SYNTHESIS</div>
-                <div>⭐ Synthesis Score: <b id="scoreVal" style="color:var(--gold);">0</b></div>
+                <div>⭐ Points: <b id="scoreVal" style="color:var(--gold);">0</b></div>
             </div>
 
             <!-- Target Compound Indicator -->
             <div class="target-box">
-                <div style="font-size: 12.5px; color: #94a3b8; text-transform: uppercase;">Synthesize This Target:</div>
+                <div style="font-size: 12px; color: var(--text-muted); font-weight: 800; text-transform: uppercase;">Synthesize Target Compound:</div>
                 <div class="target-compound" id="targetName">Preparing Reaction...</div>
-                <div style="font-size: 13px; color: #38bdf8;" id="targetFormula">-</div>
+                <div style="font-size: 15px; color: var(--accent-blue); font-weight: 800;" id="targetFormula">-</div>
             </div>
 
             <!-- Reaction Beaker -->
             <div class="reactor-box" id="reactorBox">
-                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">REACTANTS IN BEAKER (Click to drop):</div>
+                <div style="font-size: 12px; color: var(--text-muted); font-weight: 700; margin-bottom: 8px;">REACTANTS IN BEAKER (Tap element below to add, tap pill to remove):</div>
                 <div class="selected-elements-row" id="selectedRow">
-                    <span style="color:#475569; font-size:13px; margin-top:8px;">Empty Beaker. Tap elements below.</span>
+                    <span style="color:#94a3b8; font-size:13.5px; font-weight:600;">Empty Beaker. Tap elements below.</span>
                 </div>
             </div>
 
@@ -409,13 +465,28 @@
                 <button class="btn-clear" onclick="clearBeaker()">🗑 Clear</button>
             </div>
 
+            <div style="font-size: 13px; color: var(--text-muted); text-align: center; font-weight: 600; margin-top: 15px;">
+                Scores sync strictly to your <b>Game Arena</b> rank and never mix with academic quiz leaderboards.
+            </div>
+
+            <!-- START SCREEN OVERLAY -->
             <div class="game-overlay" id="startOverlay">
-                <div style="font-size: 46px; margin-bottom: 8px;">⚗️</div>
-                <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:#fff; margin-bottom: 6px;">Chemical Element Fusion Lab</h2>
-                <p style="font-size: 13.5px; color:#94a3b8; max-width: 420px; margin-bottom: 20px;">
-                    Combine elements to synthesize target acids, salts, and bases. Wrong synthesis causes unstable eruptions (-3s penalty)!
+                <div style="font-size: 52px; margin-bottom: 8px;">⚗️</div>
+                <h2 style="font-family:'Outfit', sans-serif; font-size: 28px; color:var(--primary-blue); font-weight:900; margin-bottom: 6px;">Chemical Element Fusion Lab</h2>
+                <p style="font-size: 14px; color:var(--text-muted); max-width: 440px; margin-bottom: 22px; line-height: 1.6;">
+                    Select the exact stoichiometry to synthesize target compounds. Each correct fusion awards <b>+1 pt</b>! No negative point deductions.
                 </p>
                 <button class="btn-play-trigger" onclick="startFusionLab()">▶ Start Lab Experiment</button>
+            </div>
+
+            <!-- RESULT OVERLAY -->
+            <div class="game-overlay" id="resultOverlay" style="display:none;">
+                <div style="font-size: 50px; margin-bottom: 6px;">🏆</div>
+                <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--primary-blue); font-weight:900;">Synthesis Complete!</h2>
+                <p style="font-size: 15px; color:var(--text-dark); margin: 6px 0 18px 0; font-weight:600;" id="resultSummaryText">
+                    You synthesized 0 compounds!
+                </p>
+                <button class="btn-play-trigger" onclick="restartToStart()">🔄 Synthesize Again</button>
             </div>
         </div>
 
@@ -423,22 +494,79 @@
         <div class="leaderboard-panel">
             <div class="leader-header">
                 <h2>🏆 Science Champions</h2>
-                <span style="font-size: 12px; color: #94a3b8;">Realtime State High Scores</span>
+                <span style="font-size: 12.5px; color: var(--text-muted);">Realtime Game Records</span>
             </div>
 
             <div class="personal-card">
-                <div style="font-size: 12px; color: #94a3b8; font-weight: 600;">YOUR BEST SCIENCE RECORD</div>
-                <div style="font-size: 28px; font-weight: 900; color: var(--cyan); margin-top: 4px;" id="userBestScience">0 pts</div>
+                <div style="font-size: 12px; color: var(--accent-blue); font-weight: 800; letter-spacing: 0.5px;">YOUR BEST SCIENCE RECORD</div>
+                <div style="font-size: 28px; font-weight: 900; color: var(--primary-blue); margin-top: 4px; font-family:'Outfit', sans-serif;" id="userBestScience">0 pts</div>
             </div>
 
             <div id="scienceChampionsList">
-                <div style="text-align: center; color: #94a3b8; padding: 20px;">Loading champions...</div>
+                <div style="text-align: center; color: var(--text-muted); padding: 20px;">Loading champions...</div>
             </div>
         </div>
 
     </main>
 
-    <!-- 3. GAME ENGINE & FIREBASE SYNC -->
+    <!-- 3. SYNTHESIZED AUDIO ENGINE -->
+    <script>
+        const AudioFX = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            },
+            playAdd() {
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.08);
+            },
+            playFuseSuccess() {
+                this.init();
+                const now = this.ctx.currentTime;
+                [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.06);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.06);
+                    osc.stop(now + idx * 0.06 + 0.2);
+                });
+            },
+            playUnstable() {
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(90, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.2);
+            }
+        };
+    </script>
+
+    <!-- 4. FIREBASE & EXPANDED CHEMISTRY DATABASE -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCODdCPvN4L96ye0YuxippaIUHnEUwnT90",
@@ -478,7 +606,7 @@
             if (loginBtn) loginBtn.style.display = "none";
             if (profileBtn) profileBtn.style.display = "inline-flex";
             if (logoutBtn) logoutBtn.style.display = "inline-flex";
-            if (userStatusEl) userStatusEl.innerHTML = 'Welcome, <b style="color:#ffd60a;">' + name + '</b> 👋';
+            if (userStatusEl) userStatusEl.innerHTML = 'Welcome, <b>' + name + '</b> 👋';
 
             if (uid) {
                 db.collection("gameProfiles").doc(uid).onSnapshot(doc => {
@@ -491,17 +619,17 @@
         }
 
         function setGuestState() {
-            if (userStatusEl) userStatusEl.innerHTML = '👤 <span style="color:#94a3b8;">Guest Scientist</span>';
+            if (userStatusEl) userStatusEl.innerHTML = '👤 <span style="color:var(--text-muted);">Guest Scientist</span>';
             if (loginBtn) loginBtn.style.display = "inline-flex";
             if (profileBtn) profileBtn.style.display = "none";
             if (logoutBtn) logoutBtn.style.display = "none";
         }
 
-        // Live Realtime Science Leaderboard
-        db.collection("gameProfiles").orderBy("scienceScore", "desc").limit(5).onSnapshot(snap => {
+        // Live Realtime Science Leaderboard (Isolated to Game Arena)
+        db.collection("gameProfiles").orderBy("scienceScore", "desc").limit(6).onSnapshot(snap => {
             const listEl = document.getElementById("scienceChampionsList");
             if (snap.empty) {
-                listEl.innerHTML = "<div style='text-align:center; color:#94a3b8; padding:15px;'>No champion scores yet!</div>";
+                listEl.innerHTML = "<div style='text-align:center; color:var(--text-muted); padding:15px;'>No champion scores yet!</div>";
                 return;
             }
             let html = "";
@@ -514,11 +642,13 @@
                 html += `
                     <div class="lead-item">
                         <span><b>${badge}</b> ${name}</span>
-                        <b style="color:var(--cyan);">${score} pts</b>
+                        <b style="color:var(--primary-blue); font-family:'Outfit', sans-serif;">${score} pts</b>
                     </div>`;
                 r++;
             });
             listEl.innerHTML = html;
+        }, err => {
+            console.warn("Firestore offline fallback:", err);
         });
 
         const session = readSharedCookie();
@@ -542,7 +672,7 @@
         });
 
         /* ==========================================================
-           CHEMICAL FUSION ENGINE & COMBINATIONS
+           MASSIVE EXPANDED CHEMISTRY REACTION DATABASE (CLASS 9 & 10)
            ========================================================== */
         const TARGET_COMPOUNDS = [
             { name: "Common Salt", formula: "NaCl", elements: ["Na", "Cl"] },
@@ -551,20 +681,36 @@
             { name: "Magnesium Oxide", formula: "MgO", elements: ["Mg", "O"] },
             { name: "Sodium Hydroxide", formula: "NaOH", elements: ["Na", "O", "H"] },
             { name: "Carbon Dioxide", formula: "CO2", elements: ["C", "O", "O"] },
+            { name: "Carbon Monoxide", formula: "CO", elements: ["C", "O"] },
             { name: "Methane Gas", formula: "CH4", elements: ["C", "H", "H", "H", "H"] },
-            { name: "Calcium Oxide (Quicklime)", formula: "CaO", elements: ["Ca", "O"] }
+            { name: "Calcium Oxide (Quicklime)", formula: "CaO", elements: ["Ca", "O"] },
+            { name: "Calcium Carbonate (Limestone)", formula: "CaCO3", elements: ["Ca", "C", "O", "O", "O"] },
+            { name: "Sulfur Dioxide", formula: "SO2", elements: ["S", "O", "O"] },
+            { name: "Hydrogen Sulfide", formula: "H2S", elements: ["H", "H", "S"] },
+            { name: "Ammonia Gas", formula: "NH3", elements: ["N", "H", "H", "H"] },
+            { name: "Nitric Oxide", formula: "NO", elements: ["N", "O"] },
+            { name: "Nitrogen Dioxide", formula: "NO2", elements: ["N", "O", "O"] },
+            { name: "Potassium Chloride", formula: "KCl", elements: ["K", "Cl"] },
+            { name: "Potassium Hydroxide", formula: "KOH", elements: ["K", "O", "H"] },
+            { name: "Iron(II) Sulfide", formula: "FeS", elements: ["Fe", "S"] },
+            { name: "Copper(II) Oxide", formula: "CuO", elements: ["Cu", "O"] },
+            { name: "Zinc Oxide", formula: "ZnO", elements: ["Zn", "O"] },
+            { name: "Magnesium Chloride", formula: "MgCl2", elements: ["Mg", "Cl", "Cl"] },
+            { name: "Calcium Chloride", formula: "CaCl2", elements: ["Ca", "Cl", "Cl"] },
+            { name: "Baking Soda Radical (NaHCO3)", formula: "NaHCO3", elements: ["Na", "H", "C", "O", "O", "O"] }
         ];
 
         const INVENTORY_ELEMENTS = [
-            "H", "Na", "Cl", "O",
-            "C", "Mg", "Ca", "K"
+            "H", "O", "C", "N", "Na", "Cl",
+            "K", "Ca", "Mg", "Fe", "Cu", "Zn",
+            "S", "Al"
         ];
 
         let currentTarget = null;
         let selectedInBeaker = [];
-        let labTimer = 50;
+        let labTimer = 60;
         let labScore = 0;
-        let comboStreak = 0;
+        let fusedCount = 0;
         let timerInterval = null;
         let isLabActive = false;
 
@@ -572,8 +718,8 @@
         const targetFormulaEl = document.getElementById("targetFormula");
         const selectedRow = document.getElementById("selectedRow");
         const beakerBox = document.getElementById("reactorBox");
-        const comboBadge = document.getElementById("comboBadge");
-        const overlay = document.getElementById("startOverlay");
+        const startOverlay = document.getElementById("startOverlay");
+        const resultOverlay = document.getElementById("resultOverlay");
 
         function renderElementsGrid() {
             const grid = document.getElementById("elementsGrid");
@@ -588,7 +734,12 @@
         }
 
         function pickNextTarget() {
-            currentTarget = TARGET_COMPOUNDS[Math.floor(Math.random() * TARGET_COMPOUNDS.length)];
+            let next;
+            do {
+                next = TARGET_COMPOUNDS[Math.floor(Math.random() * TARGET_COMPOUNDS.length)];
+            } while (currentTarget && next.formula === currentTarget.formula);
+
+            currentTarget = next;
             targetNameEl.innerText = currentTarget.name;
             targetFormulaEl.innerText = `Target Formula: ${currentTarget.formula}`;
             clearBeaker();
@@ -596,8 +747,9 @@
 
         function addElementToBeaker(elem) {
             if (!isLabActive) return;
-            if (selectedInBeaker.length >= 6) return;
+            if (selectedInBeaker.length >= 8) return;
 
+            AudioFX.playAdd();
             selectedInBeaker.push(elem);
             renderBeaker();
         }
@@ -605,7 +757,7 @@
         function renderBeaker() {
             selectedRow.innerHTML = "";
             if (selectedInBeaker.length === 0) {
-                selectedRow.innerHTML = `<span style="color:#475569; font-size:13px; margin-top:8px;">Empty Beaker. Tap elements below.</span>`;
+                selectedRow.innerHTML = `<span style="color:#94a3b8; font-size:13.5px; font-weight:600;">Empty Beaker. Tap elements below.</span>`;
                 return;
             }
 
@@ -626,10 +778,20 @@
             renderBeaker();
         }
 
+        function showFloatingPoint(text, color) {
+            const el = document.createElement("div");
+            el.className = "floating-pts";
+            el.innerText = text;
+            el.style.color = color;
+            el.style.left = "50%";
+            el.style.top = "40%";
+            beakerBox.appendChild(el);
+            setTimeout(() => el.remove(), 750);
+        }
+
         function executeFusion() {
             if (!isLabActive || !currentTarget) return;
 
-            // Sort both arrays to compare equality
             const requiredSorted = [...currentTarget.elements].sort();
             const currentSorted = [...selectedInBeaker].sort();
 
@@ -637,48 +799,46 @@
                             requiredSorted.every((val, index) => val === currentSorted[index]);
 
             if (isMatch) {
-                // SUCCESS FUSION
-                comboStreak++;
-                let mult = comboStreak >= 4 ? 3 : (comboStreak >= 2 ? 2 : 1);
+                // 1 POINT FOR CORRECT, ZERO PENALTY
+                AudioFX.playFuseSuccess();
+                labScore += 1;
+                fusedCount++;
 
-                if (mult > 1) {
-                    comboBadge.style.display = "inline-block";
-                    comboBadge.innerText = `🔥 ${mult}X SYNTHESIS`;
-                }
-
-                const gained = 25 * mult;
-                labScore += gained;
                 document.getElementById("scoreVal").innerText = labScore;
+                document.getElementById("fusedCountVal").innerText = fusedCount;
 
-                // Flash Green Reaction
+                showFloatingPoint("+1 FUSED!", "#16a34a");
+
                 beakerBox.style.borderColor = "var(--green)";
+                beakerBox.style.background = "var(--green-light)";
                 setTimeout(() => {
-                    beakerBox.style.borderColor = "rgba(56, 189, 248, 0.4)";
+                    beakerBox.style.borderColor = "#bfdbfe";
+                    beakerBox.style.background = "radial-gradient(circle at 50% 120%, #eff6ff 0%, #f8fafc 100%)";
                     pickNextTarget();
-                }, 300);
+                }, 320);
 
             } else {
-                // UNSTABLE FUSION ERROR
-                comboStreak = 0;
-                comboBadge.style.display = "none";
-                labTimer = Math.max(0, labTimer - 3); // -3s penalty
-                document.getElementById("timerVal").innerText = labTimer + "s";
-
+                // NO NEGATIVE MARKING - ONLY VISUAL SHAKE
+                AudioFX.playUnstable();
                 beakerBox.classList.add("unstable");
+                showFloatingPoint("UNSTABLE RATIO", "#dc2626");
                 setTimeout(() => beakerBox.classList.remove("unstable"), 350);
                 clearBeaker();
             }
         }
 
         function startFusionLab() {
-            overlay.style.display = "none";
-            labTimer = 50;
+            startOverlay.style.display = "none";
+            resultOverlay.style.display = "none";
+
+            labTimer = 60;
             labScore = 0;
-            comboStreak = 0;
+            fusedCount = 0;
             isLabActive = true;
-            document.getElementById("scoreVal").innerText = labScore;
+
+            document.getElementById("scoreVal").innerText = "0";
+            document.getElementById("fusedCountVal").innerText = "0";
             document.getElementById("timerVal").innerText = labTimer + "s";
-            comboBadge.style.display = "none";
 
             renderElementsGrid();
             pickNextTarget();
@@ -686,65 +846,26 @@
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 labTimer--;
+                document.getElementById("timerVal").innerText = labTimer + "s";
+
                 if (labTimer <= 0) {
-                    labTimer = 0;
-                    document.getElementById("timerVal").innerText = "0s";
                     clearInterval(timerInterval);
                     endFusionLab();
-                } else {
-                    document.getElementById("timerVal").innerText = labTimer + "s";
                 }
             }, 1000);
         }
 
-       /* ==========================================================
-   SCIENCE SCORE SYNC (GAMES ONLY - NO QUIZ ADDITION)
-   ========================================================== */
-async function endFusionLab() {
-    isLabActive = false;
-    clearInterval(timerInterval);
+        /* ==========================================================
+           END GAME & ISOLATED FIRESTORE SYNC (NO QUIZ ADDITION)
+           ========================================================== */
+        async function endFusionLab() {
+            isLabActive = false;
+            clearInterval(timerInterval);
 
-    overlay.style.display = "flex";
-    overlay.innerHTML = `
-        <div style="font-size: 44px; margin-bottom: 6px;">⚗️</div>
-        <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--cyan);">Synthesis Complete!</h2>
-        <p style="font-size: 15px; color:#fff; margin: 8px 0 16px 0;">
-            You earned <b style="color:var(--cyan); font-size:24px;">+${labScore}</b> Science Points!
-        </p>
-        <button class="btn-play-trigger" onclick="startFusionLab()">🔄 Synthesize Again</button>
-    `;
-
-    if (labScore <= 0) return;
-
-    const cookieData = readSharedCookie();
-    const currentUid = (auth.currentUser && auth.currentUser.uid) || (cookieData ? cookieData.uid : null);
-    const studentName = (auth.currentUser && auth.currentUser.displayName) || (cookieData ? cookieData.name : "Scientist");
-
-    if (!currentUid) {
-        alert(`Experiment complete! Scored ${labScore} points. Please login to rank on the Game Leaderboard!`);
-        return;
-    }
-
-    try {
-        // ONLY Updates Game Profile
-        await db.collection("gameProfiles").doc(currentUid).set({
-            uid: currentUid,
-            name: studentName,
-            scienceScore: firebase.firestore.FieldValue.increment(labScore),
-            totalGameScore: firebase.firestore.FieldValue.increment(labScore),
-            lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-
-        const cur = parseInt(userBestDisplay.innerText) || 0;
-        userBestDisplay.innerText = `${cur + labScore} pts`;
-
-        console.log("Science points saved strictly to Game Arena!");
-    } catch (err) {
-        console.error("Firestore sync error:", err);
-    }
-}                </p>
-                <button class="btn-play-trigger" onclick="startFusionLab()">🔄 Synthesize Again</button>
+            document.getElementById("resultSummaryText").innerHTML = `
+                Outstanding experiment! You synthesized <b>${fusedCount} compounds</b> and earned <b style="color:var(--primary-blue); font-size:24px;">+${labScore} pts</b>!
             `;
+            resultOverlay.style.display = "flex";
 
             if (labScore <= 0) return;
 
@@ -753,12 +874,12 @@ async function endFusionLab() {
             const studentName = (auth.currentUser && auth.currentUser.displayName) || (cookieData ? cookieData.name : "Scientist");
 
             if (!currentUid) {
-                alert(`Experiment complete! Scored ${labScore} points. Please login to rank on the State Leaderboard!`);
+                alert(`Lab concluded! Scored ${labScore} points. Please login to save your record on the Science Board!`);
                 return;
             }
 
             try {
-                // 1. Update Game Profile (Science best score & total game score)
+                // ONLY Updates Game Profile (strictly NO users totalScore update)
                 await db.collection("gameProfiles").doc(currentUid).set({
                     uid: currentUid,
                     name: studentName,
@@ -767,18 +888,17 @@ async function endFusionLab() {
                     lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
 
-                // 2. Direct Sync to cbsesir.com Main Portal User Collection
-                await db.collection("users").doc(currentUid).set({
-                    totalScore: firebase.firestore.FieldValue.increment(labScore)
-                }, { merge: true });
-
-                // 3. Local UI update
                 const cur = parseInt(userBestDisplay.innerText) || 0;
                 userBestDisplay.innerText = `${cur + labScore} pts`;
 
             } catch (err) {
                 console.error("Firestore sync error:", err);
             }
+        }
+
+        function restartToStart() {
+            resultOverlay.style.display = "none";
+            startOverlay.style.display = "flex";
         }
     </script>
 </body>
