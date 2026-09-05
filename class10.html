@@ -613,19 +613,51 @@
             setTimeout(nextQuestion, 800);
         }
 
-        /* ==========================================================
-           FIREBASE TRIPLE SYNC
-           ========================================================== */
-        async function endAlgebraGame() {
-            clearInterval(pressureTimer);
-            const overlay = document.getElementById("startOverlay");
-            overlay.style.display = "flex";
-            overlay.innerHTML = `
-                <div style="font-size: 44px; margin-bottom: 6px;">🏁</div>
-                <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--gold);">Matrix Conquered!</h2>
-                <p style="font-size: 15px; color:#fff; margin: 8px 0 16px 0;">
-                    You scored <b style="color:var(--orange); font-size:24px;">+${gameScore}</b> pts!
-                </p>
+        //* ==========================================================
+   ALGEBRA SCORE SYNC (GAMES ONLY - NO QUIZ ADDITION)
+   ========================================================== */
+async function endAlgebraGame() {
+    clearInterval(pressureTimer);
+    const overlay = document.getElementById("startOverlay");
+    overlay.style.display = "flex";
+    overlay.innerHTML = `
+        <div style="font-size: 44px; margin-bottom: 6px;">🏁</div>
+        <h2 style="font-family:'Outfit', sans-serif; font-size: 26px; color:var(--gold);">Matrix Conquered!</h2>
+        <p style="font-size: 15px; color:#fff; margin: 8px 0 16px 0;">
+            You scored <b style="color:var(--orange); font-size:24px;">+${gameScore}</b> pts!
+        </p>
+        <button class="btn-play-trigger" onclick="startAlgebraGame()">🔄 Play Again</button>
+    `;
+
+    if (gameScore <= 0) return;
+
+    const cookieData = readSharedCookie();
+    const currentUid = (auth.currentUser && auth.currentUser.uid) || (cookieData ? cookieData.uid : null);
+    const studentName = (auth.currentUser && auth.currentUser.displayName) || (cookieData ? cookieData.name : "Student");
+
+    if (!currentUid) {
+        alert(`Game Over! Scored ${gameScore} points. Please login to record points!`);
+        return;
+    }
+
+    try {
+        // ONLY Updates Game Profile
+        await db.collection("gameProfiles").doc(currentUid).set({
+            uid: currentUid,
+            name: studentName,
+            algebraScore: firebase.firestore.FieldValue.increment(gameScore),
+            totalGameScore: firebase.firestore.FieldValue.increment(gameScore),
+            lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        const cur = parseInt(userBestDisplay.innerText) || 0;
+        userBestDisplay.innerText = `${cur + gameScore} pts`;
+
+        console.log("Algebra points saved strictly to Game Arena!");
+    } catch (err) {
+        console.error("Firestore sync error:", err);
+    }
+}               </p>
                 <button class="btn-play-trigger" onclick="startAlgebraGame()">🔄 Play Again</button>
             `;
 
